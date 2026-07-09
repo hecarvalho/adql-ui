@@ -9,15 +9,117 @@ const editorSchemas = {
     mode: "dom",
     fields: [
       { type: "section", label: "Insight principal" },
-      { key: "insightCategory", label: "Categoria", selector: "#insightCategory", type: "input" },
-      { key: "mainValue", label: "Valor principal", selector: "#mainValue", type: "input" },
-      { key: "mainUnit", label: "Unidade", selector: "#mainUnit", type: "input" },
-      { key: "mainStatement", label: "Frase principal", selector: "#mainStatement", type: "input" },
-      { key: "mainInsight", label: "Insight", selector: "#mainInsight", type: "textarea" },
-      { key: "supportingText", label: "Texto de apoio", selector: "#supportingText", type: "textarea" },
+      {
+        key: "insightCategory",
+        label: "Categoria",
+        selector: "#insightCategory",
+        type: "input"
+      },
+      {
+        key: "mainValue",
+        label: "Valor principal",
+        selector: "#mainValue",
+        type: "input"
+      },
+      {
+        key: "mainUnit",
+        label: "Unidade",
+        selector: "#mainUnit",
+        type: "input"
+      },
+      {
+        key: "mainStatement",
+        label: "Frase principal",
+        selector: "#mainStatement",
+        type: "input"
+      },
+      {
+        key: "mainInsight",
+        label: "Insight",
+        selector: "#mainInsight",
+        type: "textarea"
+      },
+      {
+        key: "supportingText",
+        label: "Texto de apoio",
+        selector: "#supportingText",
+        type: "textarea"
+      },
+
+      { type: "section", label: "Comparação direta" },
+      {
+        key: "comparisonSubtitle",
+        label: "Descrição da comparação",
+        selector: ".ic-comparison-heading p",
+        type: "input"
+      },
+
+      { type: "section", label: "Equipe esquerda" },
+      {
+        key: "homeTeam",
+        label: "Nome da equipe",
+        selector: "#homeTeam",
+        type: "input"
+      },
+      {
+        key: "homeShots",
+        label: "Finalizações",
+        selector: "#homeShots",
+        type: "input"
+      },
+      {
+        key: "homeXg",
+        label: "xG",
+        selector: "#homeXg",
+        type: "input"
+      },
+      {
+        key: "homeReading",
+        label: "Texto de apoio",
+        selector:
+          ".ic-team-block:not(.ic-team-block-away) .ic-team-reading",
+        type: "textarea"
+      },
+
+      { type: "section", label: "Equipe direita" },
+      {
+        key: "awayTeam",
+        label: "Nome da equipe",
+        selector: "#awayTeam",
+        type: "input"
+      },
+      {
+        key: "awayShots",
+        label: "Finalizações",
+        selector: "#awayShots",
+        type: "input"
+      },
+      {
+        key: "awayXg",
+        label: "xG",
+        selector: "#awayXg",
+        type: "input"
+      },
+      {
+        key: "awayReading",
+        label: "Texto de apoio",
+        selector: ".ic-team-block-away .ic-team-reading",
+        type: "textarea"
+      },
+
       { type: "section", label: "Leitura" },
-      { key: "readingText", label: "Leitura", selector: "#readingText", type: "textarea" },
-      { key: "sourceText", label: "Fonte", selector: "#sourceText", type: "input" }
+      {
+        key: "readingText",
+        label: "Leitura",
+        selector: "#readingText",
+        type: "textarea"
+      },
+      {
+        key: "sourceText",
+        label: "Fonte",
+        selector: "#sourceText",
+        type: "input"
+      }
     ]
   },
 
@@ -25,11 +127,31 @@ const editorSchemas = {
     mode: "dom",
     fields: [
       { type: "section", label: "Cabeçalho" },
-      { key: "pitchTitle", label: "Título", selector: "#pitchTitle", type: "input" },
-      { key: "pitchSubtitle", label: "Subtítulo", selector: "#pitchSubtitle", type: "input" },
+      {
+        key: "pitchTitle",
+        label: "Título",
+        selector: "#pitchTitle",
+        type: "input"
+      },
+      {
+        key: "pitchSubtitle",
+        label: "Subtítulo",
+        selector: "#pitchSubtitle",
+        type: "input"
+      },
       { type: "section", label: "Leitura" },
-      { key: "readingText", label: "Leitura tática", selector: "#readingText", type: "textarea" },
-      { key: "sourceText", label: "Fonte", selector: "#sourceText", type: "input" }
+      {
+        key: "readingText",
+        label: "Leitura tática",
+        selector: "#readingText",
+        type: "textarea"
+      },
+      {
+        key: "sourceText",
+        label: "Fonte",
+        selector: "#sourceText",
+        type: "input"
+      }
     ]
   },
 
@@ -37,13 +159,43 @@ const editorSchemas = {
     mode: "dom",
     fields: [
       { type: "section", label: "Cabeçalho" },
-      { key: "radarTitle", label: "Título", selector: "#radarTitle", type: "input" },
-      { key: "radarSubtitle", label: "Subtítulo", selector: "#radarSubtitle", type: "input" },
+      {
+        key: "radarTitle",
+        label: "Título",
+        selector: "#radarTitle",
+        type: "input"
+      },
+      {
+        key: "radarSubtitle",
+        label: "Subtítulo",
+        selector: "#radarSubtitle",
+        type: "input"
+      },
       { type: "section", label: "Leitura" },
-      { key: "radarReadingTitle", label: "Título da leitura", selector: "#radarReadingTitle", type: "input" },
-      { key: "radarReadingText", label: "Texto da leitura", selector: "#radarReadingText", type: "textarea" },
-      { key: "radarKeyText", label: "Ponto-chave", selector: "#radarKeyText", type: "textarea" },
-      { key: "sourceText", label: "Fonte", selector: "#sourceText", type: "input" }
+      {
+        key: "radarReadingTitle",
+        label: "Título da leitura",
+        selector: "#radarReadingTitle",
+        type: "input"
+      },
+      {
+        key: "radarReadingText",
+        label: "Texto da leitura",
+        selector: "#radarReadingText",
+        type: "textarea"
+      },
+      {
+        key: "radarKeyText",
+        label: "Ponto-chave",
+        selector: "#radarKeyText",
+        type: "textarea"
+      },
+      {
+        key: "sourceText",
+        label: "Fonte",
+        selector: "#sourceText",
+        type: "input"
+      }
     ]
   }
 };
@@ -57,12 +209,19 @@ function getSchema(componentId) {
 
 function createSection(label) {
   const section = document.createElement("div");
+
   section.className = "field-section";
   section.textContent = label;
+
   return section;
 }
 
-function createField({ label, value, type = "input", onInput }) {
+function createField({
+  label,
+  value,
+  type = "input",
+  onInput
+}) {
   const wrapper = document.createElement("div");
   wrapper.className = "field";
 
@@ -87,37 +246,56 @@ function createField({ label, value, type = "input", onInput }) {
 }
 
 function numberFromInput(value) {
-  const parsed = Number(String(value).replace(",", "."));
-  return Number.isFinite(parsed) ? parsed : 0;
+  const parsed = Number(
+    String(value).replace(",", ".")
+  );
+
+  return Number.isFinite(parsed)
+    ? parsed
+    : 0;
 }
 
-function rerenderDataComponent(win, schema, data) {
-  const renderFunction = win[schema.renderFunction];
+function rerenderDataComponent(
+  win,
+  schema,
+  data
+) {
+  const renderFunction =
+    win[schema.renderFunction];
 
   if (typeof renderFunction === "function") {
     renderFunction(data);
   } else {
-    console.warn("Função de renderização não encontrada:", schema.renderFunction);
+    console.warn(
+      "Função de renderização não encontrada:",
+      schema.renderFunction
+    );
   }
 }
 
-function buildDataInspector({ form, frame, schema, currentValues }) {
+function buildDataInspector({
+  form,
+  frame,
+  schema,
+  currentValues
+}) {
   const win = frame.contentWindow;
   const data = win[schema.dataKey];
 
   if (!data) {
-    form.innerHTML = `
-      <p class="empty-state">
-        Dados não encontrados no componente.
-      </p>
-    `;
+    form.innerHTML =
+      `Dados não encontrados no componente.`;
+
     return;
   }
 
   currentValues.__data = data;
-  currentValues.__variableName = schema.dataKey;
+  currentValues.__variableName =
+    schema.dataKey;
 
-  form.appendChild(createSection("Informações gerais"));
+  form.appendChild(
+    createSection("Informações gerais")
+  );
 
   form.appendChild(
     createField({
@@ -125,7 +303,12 @@ function buildDataInspector({ form, frame, schema, currentValues }) {
       value: data.home.name,
       onInput: (value) => {
         data.home.name = value;
-        rerenderDataComponent(win, schema, data);
+
+        rerenderDataComponent(
+          win,
+          schema,
+          data
+        );
       }
     })
   );
@@ -136,7 +319,12 @@ function buildDataInspector({ form, frame, schema, currentValues }) {
       value: data.away.name,
       onInput: (value) => {
         data.away.name = value;
-        rerenderDataComponent(win, schema, data);
+
+        rerenderDataComponent(
+          win,
+          schema,
+          data
+        );
       }
     })
   );
@@ -147,7 +335,12 @@ function buildDataInspector({ form, frame, schema, currentValues }) {
       value: data.subtitle,
       onInput: (value) => {
         data.subtitle = value;
-        rerenderDataComponent(win, schema, data);
+
+        rerenderDataComponent(
+          win,
+          schema,
+          data
+        );
       }
     })
   );
@@ -158,23 +351,38 @@ function buildDataInspector({ form, frame, schema, currentValues }) {
       value: data.version,
       onInput: (value) => {
         data.version = value;
-        rerenderDataComponent(win, schema, data);
+
+        rerenderDataComponent(
+          win,
+          schema,
+          data
+        );
       }
     })
   );
 
-  form.appendChild(createSection("Métricas"));
+  form.appendChild(
+    createSection("Métricas")
+  );
 
   data.metrics.forEach((metric) => {
-    form.appendChild(createSection(metric.label));
+    form.appendChild(
+      createSection(metric.label)
+    );
 
     form.appendChild(
       createField({
         label: data.home.name,
         value: metric.home,
         onInput: (value) => {
-          metric.home = numberFromInput(value);
-          rerenderDataComponent(win, schema, data);
+          metric.home =
+            numberFromInput(value);
+
+          rerenderDataComponent(
+            win,
+            schema,
+            data
+          );
         }
       })
     );
@@ -184,8 +392,14 @@ function buildDataInspector({ form, frame, schema, currentValues }) {
         label: data.away.name,
         value: metric.away,
         onInput: (value) => {
-          metric.away = numberFromInput(value);
-          rerenderDataComponent(win, schema, data);
+          metric.away =
+            numberFromInput(value);
+
+          rerenderDataComponent(
+            win,
+            schema,
+            data
+          );
         }
       })
     );
@@ -196,13 +410,20 @@ function buildDataInspector({ form, frame, schema, currentValues }) {
         value: metric.label,
         onInput: (value) => {
           metric.label = value;
-          rerenderDataComponent(win, schema, data);
+
+          rerenderDataComponent(
+            win,
+            schema,
+            data
+          );
         }
       })
     );
   });
 
-  form.appendChild(createSection("Rodapé"));
+  form.appendChild(
+    createSection("Rodapé")
+  );
 
   form.appendChild(
     createField({
@@ -210,32 +431,66 @@ function buildDataInspector({ form, frame, schema, currentValues }) {
       value: data.source,
       onInput: (value) => {
         data.source = value;
-        rerenderDataComponent(win, schema, data);
+
+        rerenderDataComponent(
+          win,
+          schema,
+          data
+        );
       }
     })
   );
 }
 
-function updatePreviewField(frame, field, value) {
+function updatePreviewField(
+  frame,
+  field,
+  value
+) {
   const doc = frame.contentDocument;
-  const target = doc.querySelector(field.selector);
+  const target =
+    doc.querySelector(field.selector);
 
   if (target) {
     target.textContent = value;
   }
 }
 
-function buildDomInspector({ form, frame, fields, currentValues, onUpdate }) {
+function runDomComponentHooks(frame) {
+  const win = frame.contentWindow;
+
+  if (
+    typeof win.updateInsightVisuals ===
+    "function"
+  ) {
+    win.updateInsightVisuals();
+  }
+}
+
+function buildDomInspector({
+  form,
+  frame,
+  fields,
+  currentValues,
+  onUpdate
+}) {
   const doc = frame.contentDocument;
 
   fields.forEach((field) => {
     if (field.type === "section") {
-      form.appendChild(createSection(field.label));
+      form.appendChild(
+        createSection(field.label)
+      );
+
       return;
     }
 
-    const target = doc.querySelector(field.selector);
-    const value = target ? target.textContent.trim() : "";
+    const target =
+      doc.querySelector(field.selector);
+
+    const value = target
+      ? target.textContent.trim()
+      : "";
 
     currentValues[field.key] = value;
 
@@ -244,11 +499,22 @@ function buildDomInspector({ form, frame, fields, currentValues, onUpdate }) {
         label: field.label,
         value,
         type: field.type,
-        onInput: (newValue) => {
-          currentValues[field.key] = newValue;
-          updatePreviewField(frame, field, newValue);
 
-          if (typeof onUpdate === "function") {
+        onInput: (newValue) => {
+          currentValues[field.key] =
+            newValue;
+
+          updatePreviewField(
+            frame,
+            field,
+            newValue
+          );
+
+          runDomComponentHooks(frame);
+
+          if (
+            typeof onUpdate === "function"
+          ) {
             onUpdate(field, newValue);
           }
         }
@@ -257,7 +523,13 @@ function buildDomInspector({ form, frame, fields, currentValues, onUpdate }) {
   });
 }
 
-function buildInspector({ form, frame, schema, currentValues, onUpdate }) {
+function buildInspector({
+  form,
+  frame,
+  schema,
+  currentValues,
+  onUpdate
+}) {
   form.innerHTML = "";
 
   if (schema.mode === "data") {
