@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <title>ADQL Editor</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+
+  <link
+    href="https://fonts.googleapis.com/css2?family=Barlow+Semi+Condensed:wght@500;600;700;800;900&family=Inter:wght@400;500;600;700;800&display=swap"
+    rel="stylesheet"
+  >
+
+  <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+  <aside class="sidebar">
+    <h1>ADQL</h1>
+    <p>Editor local</p>
+
+    <div id="componentsList"></div>
+  </aside>
+
+  <main class="workspace">
+
+    <header class="toolbar">
+      <div>
+        <span id="componentCode">—</span>
+        <h2 id="componentTitle">Selecione um componente</h2>
+      </div>
+
+      <div class="toolbar-actions">
+        <button id="exportDataBtn" disabled>Dados</button>
+        <button id="exportHtmlBtn" disabled>HTML</button>
+        <button id="exportPngBtn" disabled>PNG</button>
+      </div>
+    </header>
+
+    <section class="editor-layout">
+
+      <aside class="form-panel">
+        <h3>Conteúdo</h3>
+
+        <div id="formFields" class="form-fields">
+          <p class="empty-state">Selecione um componente para editar.</p>
+        </div>
+      </aside>
+
+      <div class="preview">
+        <iframe id="previewFrame"></iframe>
+      </div>
+
+    </section>
+
+  </main>
+
+  <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+  <script src="../data/components-registry.js?v=2"></script>
+
+  <script src="inspector.js?v=2"></script>
+  <script src="exporter.js?v=2"></script>
+  <script src="editor.js?v=2"></script>
+
+</body>
+</html>

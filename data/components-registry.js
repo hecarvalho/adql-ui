@@ -1,0 +1,38 @@
+const componentsRegistry = [
+  {
+    id: "match-comparison",
+    name: "Match Comparison",
+    code: "C-01",
+    htmlPath: "../components/match-comparison.html",
+    dataPath: "../data/france-morocco-comparison.js",
+    category: "Comparativo",
+    status: "finalizado"
+  },
+  {
+    id: "insight-card",
+    name: "Insight Card",
+    code: "C-02",
+    htmlPath: "../components/insight-card.html",
+    dataPath: "../data/france-morocco-insight.js",
+    category: "Insight",
+    status: "finalizado"
+  },
+  {
+    id: "tactical-pitch",
+    name: "Tactical Pitch",
+    code: "C-03",
+    htmlPath: "../components/tactical-pitch.html",
+    dataPath: "../data/france-morocco-tactical.js",
+    category: "Tática",
+    status: "finalizado"
+  },
+  {
+    id: "radar-profile",
+    name: "Radar Profile",
+    code: "C-04",
+    htmlPath: "../components/radar-profile.html",
+    dataPath: "../data/france-morocco-radar.js",
+    category: "Perfil",
+    status: "finalizado"
+  }
+];

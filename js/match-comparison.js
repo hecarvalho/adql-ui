@@ -1,249 +1,122 @@
-/* ==========================================================
-   ADQL UI
-   MATCH COMPARISON
-========================================================== */
+function formatComparisonValue(value, type) {
+  const number = Number(value);
 
-
-const match = {
-
-  home: "França",
-
-  away: "Marrocos",
-
-  stage: "Quartas de final",
-
-  competition: "Copa do Mundo 2026",
-
-  stats: [
-
-    {
-      label: "Posse de bola",
-      home: 58,
-      away: 42,
-      suffix: "%"
-    },
-
-    {
-      label: "Expected Goals (xG)",
-      home: 1.74,
-      away: 1.08,
-      decimals: 2
-    },
-
-    {
-      label: "Finalizações",
-      home: 14,
-      away: 9
-    },
-
-    {
-      label: "Passes certos",
-      home: 541,
-      away: 392
-    },
-
-    {
-      label: "Recuperações no campo ofensivo",
-      home: 37,
-      away: 29
-    }
-
-  ]
-
-};
-
-
-/* ==========================================================
-   HEADER
-========================================================== */
-
-
-document
-  .getElementById("homeTitle")
-  .textContent = match.home;
-
-
-document
-  .getElementById("awayTitle")
-  .textContent = match.away;
-
-
-document
-  .getElementById("matchSubtitle")
-  .textContent =
-  `${match.stage} • ${match.competition}`;
-
-
-document
-  .getElementById("homeName")
-  .textContent = match.home;
-
-
-document
-  .getElementById("awayName")
-  .textContent = match.away;
-
-
-/* ==========================================================
-   METRICS
-========================================================== */
-
-
-const metrics =
-  document.getElementById("metrics");
-
-
-const formatValue = (value, stat) => {
-
-  const suffix =
-    stat.suffix ?? "";
-
-  if(stat.decimals){
-
-    return (
-      value.toFixed(stat.decimals)
-      + suffix
-    );
-
+  if (type === "percent") {
+    return `${Math.round(number)}%`;
   }
 
-  return (
-    value
-    + suffix
-  );
+  if (type === "decimal") {
+    return number.toFixed(2);
+  }
 
-};
+  return String(Math.round(number));
+}
 
+function formatComparisonDiff(home, away, type, homeName, awayName) {
+  const homeNumber = Number(home);
+  const awayNumber = Number(away);
+  const diff = homeNumber - awayNumber;
+  const winner = diff >= 0 ? homeName : awayName;
+  const abs = Math.abs(diff);
 
-match.stats.forEach((stat) => {
+  let value;
 
-  const total =
-    stat.home
-    + stat.away;
+  if (type === "percent") {
+    value = `${Math.round(abs)}%`;
+  } else if (type === "decimal") {
+    value = abs.toFixed(2);
+  } else {
+    value = Math.round(abs);
+  }
 
+  return `+${value} ${winner}`;
+}
 
-  const homeShare =
-    total === 0
-      ? 50
-      : (stat.home / total) * 100;
+function getHomeShare(home, away) {
+  const homeNumber = Number(home);
+  const awayNumber = Number(away);
+  const total = homeNumber + awayNumber;
 
+  if (!Number.isFinite(total) || total <= 0) {
+    return 50;
+  }
 
-  const difference =
-    stat.home
-    - stat.away;
+  return (homeNumber / total) * 100;
+}
 
+function createMetricRow(metric, data) {
+  const article = document.createElement("article");
+  article.className = "mc-metric";
+  article.dataset.metricId = metric.id;
 
-  const winningTeam =
-    difference === 0
-      ? "equilíbrio"
-      : difference > 0
-        ? match.home
-        : match.away;
+  const homeShare = getHomeShare(metric.home, metric.away);
 
+  article.innerHTML = `
+    <div class="mc-metric-label">${metric.label}</div>
 
-  const differenceValue =
-    difference === 0
-      ? "0"
-      : `${
-          difference > 0
-            ? "+"
-            : ""
-        }${
-          formatValue(
-            Math.abs(difference),
-            stat
-          )
-        }`;
+    <div class="mc-metric-content">
+      <strong class="mc-home-value" data-metric="${metric.id}" data-side="home">
+        ${formatComparisonValue(metric.home, metric.type)}
+      </strong>
 
+      <div class="mc-bar">
+        <span class="mc-bar-fill" style="width:${homeShare}%"></span>
+        <i style="left:${homeShare}%"></i>
+        <em>
+          ${formatComparisonDiff(
+            metric.home,
+            metric.away,
+            metric.type,
+            data.home.name,
+            data.away.name
+          )}
+        </em>
+      </div>
 
-  const item =
-    document.createElement(
-      "article"
-    );
-
-
-  item.className =
-    "mc-metric";
-
-
-  item.innerHTML = `
-
-    <div class="mc-metric-name">
-
-      ${stat.label}
-
+      <strong class="mc-away-value" data-metric="${metric.id}" data-side="away">
+        ${formatComparisonValue(metric.away, metric.type)}
+      </strong>
     </div>
-
-
-    <div class="mc-metric-values">
-
-
-      <div class="mc-value home">
-
-        ${formatValue(
-          stat.home,
-          stat
-        )}
-
-      </div>
-
-
-      <div class="mc-visual">
-
-
-        <div class="mc-line">
-
-          <div
-            class="mc-fill"
-            style="
-              width:
-              ${homeShare}%
-            "
-          ></div>
-
-
-          <div
-            class="mc-node"
-            style="
-              left:
-              ${homeShare}%
-            "
-          ></div>
-
-        </div>
-
-
-        <div class="mc-note">
-
-          <strong>
-
-            ${differenceValue}
-
-          </strong>
-
-          ${winningTeam}
-
-        </div>
-
-
-      </div>
-
-
-      <div class="mc-value away">
-
-        ${formatValue(
-          stat.away,
-          stat
-        )}
-
-      </div>
-
-
-    </div>
-
   `;
 
+  return article;
+}
 
-  metrics.appendChild(item);
+function renderComparison(data) {
+  if (!data) return;
 
+  const homeTitle = document.getElementById("homeTitle");
+  const awayTitle = document.getElementById("awayTitle");
+  const matchSubtitle = document.getElementById("matchSubtitle");
+  const homeTeamLabel = document.getElementById("homeTeamLabel");
+  const awayTeamLabel = document.getElementById("awayTeamLabel");
+  const sourceText = document.getElementById("sourceText");
+  const versionText = document.getElementById("comparisonVersion");
+  const metricsContainer = document.getElementById("comparisonMetrics");
+
+  if (homeTitle) homeTitle.textContent = data.home.name;
+  if (awayTitle) awayTitle.textContent = data.away.name;
+  if (matchSubtitle) matchSubtitle.textContent = data.subtitle;
+  if (homeTeamLabel) homeTeamLabel.textContent = data.home.name;
+  if (awayTeamLabel) awayTeamLabel.textContent = data.away.name;
+  if (sourceText) sourceText.textContent = data.source;
+  if (versionText) versionText.textContent = data.version;
+
+  if (metricsContainer) {
+    metricsContainer.innerHTML = "";
+
+    data.metrics.forEach((metric) => {
+      metricsContainer.appendChild(
+        createMetricRow(metric, data)
+      );
+    });
+  }
+}
+
+window.renderComparison = renderComparison;
+
+window.addEventListener("load", () => {
+  if (window.comparisonData) {
+    window.renderComparison(window.comparisonData);
+  }
 });
