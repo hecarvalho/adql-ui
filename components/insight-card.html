@@ -1,0 +1,505 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+  <meta charset="UTF-8" />
+
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+  />
+
+  <title>ADQL UI — Insight Card</title>
+
+  <!-- TIPOGRAFIA -->
+
+  <link
+    rel="preconnect"
+    href="https://fonts.googleapis.com"
+  />
+
+  <link
+    rel="preconnect"
+    href="https://fonts.gstatic.com"
+    crossorigin
+  />
+
+  <link
+    href="https://fonts.googleapis.com/css2?family=Barlow+Semi+Condensed:wght@500;600;700;800;900&family=Inter:wght@400;500;600;700;800&display=swap"
+    rel="stylesheet"
+  />
+
+  <!-- ADQL CORE -->
+
+  <link
+    rel="stylesheet"
+    href="../css/core/core.css"
+  />
+
+  <!-- COMPONENTE -->
+
+  <link
+    rel="stylesheet"
+    href="../css/components/insight-card.css"
+  />
+</head>
+
+<body>
+
+  <main class="adql-canvas">
+
+    <section class="ic-poster">
+
+      <!-- =========================================
+           ELEMENTOS GRÁFICOS DE FUNDO
+      ========================================== -->
+
+      <div
+        class="ic-background"
+        aria-hidden="true"
+      >
+
+        <div class="ic-dot-grid ic-dot-grid-top"></div>
+
+        <div class="ic-dot-grid ic-dot-grid-bottom"></div>
+
+        <!-- CAMPO EM MARCA D'ÁGUA -->
+
+        <svg
+          class="ic-bg-pitch"
+          viewBox="0 0 720 430"
+        >
+          <rect
+            x="20"
+            y="20"
+            width="680"
+            height="390"
+          />
+
+          <line
+            x1="360"
+            y1="20"
+            x2="360"
+            y2="410"
+          />
+
+          <circle
+            cx="360"
+            cy="215"
+            r="58"
+          />
+
+          <circle
+            cx="360"
+            cy="215"
+            r="3"
+          />
+
+          <rect
+            x="20"
+            y="135"
+            width="95"
+            height="160"
+          />
+
+          <rect
+            x="605"
+            y="135"
+            width="95"
+            height="160"
+          />
+
+          <rect
+            x="20"
+            y="175"
+            width="38"
+            height="80"
+          />
+
+          <rect
+            x="662"
+            y="175"
+            width="38"
+            height="80"
+          />
+
+          <path
+            d="M116 295 C198 246 267 248 338 194"
+          />
+
+          <path
+            d="M338 194 C416 138 493 125 590 82"
+          />
+
+          <circle cx="116" cy="295" r="6" />
+          <circle cx="213" cy="242" r="6" />
+          <circle cx="338" cy="194" r="6" />
+          <circle cx="452" cy="139" r="6" />
+          <circle cx="590" cy="82" r="6" />
+        </svg>
+
+        <!-- REDE -->
+
+        <svg
+          class="ic-bg-network"
+          viewBox="0 0 280 240"
+        >
+          <line x1="42" y1="55" x2="120" y2="32" />
+          <line x1="120" y1="32" x2="218" y2="72" />
+          <line x1="42" y1="55" x2="80" y2="140" />
+          <line x1="80" y1="140" x2="170" y2="118" />
+          <line x1="170" y1="118" x2="218" y2="72" />
+          <line x1="80" y1="140" x2="132" y2="202" />
+          <line x1="132" y1="202" x2="230" y2="176" />
+          <line x1="170" y1="118" x2="230" y2="176" />
+
+          <circle cx="42" cy="55" r="7" />
+          <circle cx="120" cy="32" r="7" />
+          <circle cx="218" cy="72" r="7" />
+          <circle cx="80" cy="140" r="7" />
+          <circle cx="170" cy="118" r="7" />
+          <circle cx="132" cy="202" r="7" />
+          <circle cx="230" cy="176" r="7" />
+        </svg>
+
+        <!-- MINI GRÁFICO -->
+
+        <svg
+          class="ic-bg-chart"
+          viewBox="0 0 300 190"
+        >
+          <line x1="28" y1="158" x2="280" y2="158" />
+          <line x1="28" y1="24" x2="28" y2="158" />
+
+          <line x1="28" y1="118" x2="280" y2="118" />
+          <line x1="28" y1="78" x2="280" y2="78" />
+
+          <path
+            class="ic-chart-gold"
+            d="M36 138 L88 118 L142 84 L198 57 L260 28"
+          />
+
+          <path
+            class="ic-chart-blue"
+            d="M36 150 L88 137 L142 122 L198 96 L260 73"
+          />
+        </svg>
+
+      </div>
+
+      <!-- =========================================
+           CABEÇALHO
+      ========================================== -->
+
+      <header class="ic-header">
+
+        <div>
+
+          <p class="ic-kicker">
+            Insight-chave
+          </p>
+
+          <p
+            id="insightCategory"
+            class="ic-category"
+          >
+            Eficiência ofensiva
+          </p>
+
+        </div>
+
+        <div class="ic-index">
+
+          <span>
+            ADQL UI
+          </span>
+
+          <strong>
+            C-02
+          </strong>
+
+        </div>
+
+      </header>
+
+      <!-- =========================================
+           INSIGHT PRINCIPAL
+      ========================================== -->
+
+      <section class="ic-main">
+
+        <div class="ic-main-number">
+
+          <strong
+            id="mainValue"
+            class="ic-value"
+          >
+            2,30
+          </strong>
+
+          <span
+            id="mainUnit"
+            class="ic-unit"
+          >
+            xG
+          </span>
+
+        </div>
+
+        <h1
+          id="mainStatement"
+          class="ic-statement"
+        >
+          com apenas 9 finalizações
+        </h1>
+
+        <div class="ic-accent-line"></div>
+
+        <p
+          id="mainInsight"
+          class="ic-insight"
+        >
+          A Noruega não precisa finalizar muito para criar perigo real.
+        </p>
+
+        <p
+          id="supportingText"
+          class="ic-supporting"
+        >
+          O dado resume uma diferença central entre os ataques:
+          o Brasil constrói volume; a Noruega procura chegar em
+          condições mais limpas e verticais.
+        </p>
+
+      </section>
+
+      <!-- =========================================
+           COMPARAÇÃO
+      ========================================== -->
+
+      <section class="ic-comparison">
+
+        <div class="ic-comparison-heading">
+
+          <span>
+            Comparação direta
+          </span>
+
+          <p>
+            Volume de finalizações × qualidade das chances
+          </p>
+
+        </div>
+
+        <div class="ic-comparison-grid">
+
+          <!-- BRASIL -->
+
+          <article class="ic-team-block">
+
+            <span
+              id="homeTeam"
+              class="ic-team-name"
+            >
+              Brasil
+            </span>
+
+            <div class="ic-stat-group">
+
+              <div class="ic-stat">
+
+                <strong id="homeShots">
+                  19
+                </strong>
+
+                <span>
+                  finalizações
+                </span>
+
+              </div>
+
+              <div class="ic-stat">
+
+                <strong id="homeXg">
+                  2,12
+                </strong>
+
+                <span>
+                  xG
+                </span>
+
+              </div>
+
+            </div>
+
+            <div class="ic-profile-line ic-profile-line-home">
+
+              <span class="ic-line-start"></span>
+
+              <span class="ic-line-node"></span>
+
+            </div>
+
+            <p class="ic-team-reading">
+              Mais volume para construir perigo.
+            </p>
+
+          </article>
+
+          <!-- EIXO -->
+
+          <div class="ic-comparison-center">
+
+            <span>
+              Volume
+            </span>
+
+            <div class="ic-axis">
+
+              <i class="ic-axis-home"></i>
+
+              <i class="ic-axis-center"></i>
+
+              <i class="ic-axis-away"></i>
+
+            </div>
+
+            <span>
+              Eficiência
+            </span>
+
+          </div>
+
+          <!-- NORUEGA -->
+
+          <article class="ic-team-block ic-team-block-away">
+
+            <span
+              id="awayTeam"
+              class="ic-team-name"
+            >
+              Noruega
+            </span>
+
+            <div class="ic-stat-group">
+
+              <div class="ic-stat">
+
+                <strong id="awayShots">
+                  9
+                </strong>
+
+                <span>
+                  finalizações
+                </span>
+
+              </div>
+
+              <div class="ic-stat">
+
+                <strong id="awayXg">
+                  2,30
+                </strong>
+
+                <span>
+                  xG
+                </span>
+
+              </div>
+
+            </div>
+
+            <div class="ic-profile-line ic-profile-line-away">
+
+              <span class="ic-line-start"></span>
+
+              <span class="ic-line-node"></span>
+
+            </div>
+
+            <p class="ic-team-reading">
+              Menos volume, mas chances mais limpas.
+            </p>
+
+          </article>
+
+        </div>
+
+      </section>
+
+      <!-- =========================================
+           CONCLUSÃO VISUAL
+      ========================================== -->
+
+      <section class="ic-reading">
+
+        <div class="ic-reading-label">
+
+          <span>
+            Leitura
+          </span>
+
+          <i></i>
+
+        </div>
+
+        <p id="readingText">
+          O Brasil constrói volume.
+          A Noruega procura eficiência.
+        </p>
+
+      </section>
+
+      <!-- =========================================
+           RODAPÉ
+      ========================================== -->
+
+      <footer class="ic-footer">
+
+        <div>
+
+          <strong>
+            Fonte
+          </strong>
+
+          <span id="sourceText">
+            FIFA • Relatórios técnicos
+          </span>
+
+        </div>
+
+        <div class="ic-footer-brand">
+
+          <strong>
+            Além das quatro linhas
+          </strong>
+
+          <span>
+            Henrique Carvalho
+          </span>
+
+        </div>
+
+      </footer>
+
+      <!-- ASSINATURA VISUAL -->
+
+      <div
+        class="ic-wave"
+        aria-hidden="true"
+      ></div>
+
+      <div
+        class="ic-wave-dots"
+        aria-hidden="true"
+      ></div>
+
+    </section>
+
+  </main>
+
+  <script src="../js/insight-card.js"></script>
+
+</body>
+
+</html>
