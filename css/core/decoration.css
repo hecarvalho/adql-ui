@@ -1,0 +1,46 @@
+.adql-dots{
+  position:absolute;
+  width:130px;
+  height:130px;
+  opacity:.24;
+  background-image:radial-gradient(var(--adql-navy) 1px, transparent 1px);
+  background-size:13px 13px;
+  pointer-events:none;
+}
+
+.adql-dots.top-left{
+  top:105px;
+  left:34px;
+}
+
+.adql-dots.bottom-right{
+  right:58px;
+  bottom:150px;
+}
+
+.adql-circle{
+  position:absolute;
+  width:220px;
+  height:220px;
+  opacity:.16;
+  border:1px solid var(--adql-gold);
+  border-radius:50%;
+  pointer-events:none;
+}
+
+.adql-circle.top-right{
+  right:70px;
+  top:90px;
+}
+
+.adql-rule{
+  height:2px;
+  width:100%;
+  background:var(--adql-navy);
+}
+
+.adql-thin-rule{
+  height:1px;
+  width:100%;
+  background:var(--adql-border);
+}

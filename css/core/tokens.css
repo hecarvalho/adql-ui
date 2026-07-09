@@ -1,0 +1,68 @@
+:root{
+
+/* ===========================
+   CORES
+=========================== */
+
+--adql-paper:#F7F4ED;
+--adql-white:#FFFDF8;
+
+--adql-navy:#071F3D;
+--adql-navy-2:#0E2D59;
+
+--adql-gold:#C58B12;
+--adql-gold-light:#D8A331;
+
+--adql-text:#071F3D;
+--adql-muted:#6C7280;
+
+--adql-border:#D9D2C5;
+--adql-line:#E8E1D5;
+
+
+/* ===========================
+   ESPAÇAMENTO
+=========================== */
+
+--space-4:4px;
+--space-8:8px;
+--space-12:12px;
+--space-16:16px;
+--space-24:24px;
+--space-32:32px;
+--space-48:48px;
+--space-64:64px;
+--space-96:96px;
+
+
+/* ===========================
+   RAIOS
+=========================== */
+
+--radius-sm:6px;
+--radius-md:12px;
+--radius-lg:18px;
+
+
+/* ===========================
+   BORDAS
+=========================== */
+
+--border:1px solid var(--adql-border);
+
+
+/* ===========================
+   SOMBRAS
+=========================== */
+
+--shadow-soft:
+0 10px 30px rgba(7,31,61,.05);
+
+
+/* ===========================
+   LARGURAS
+=========================== */
+
+--page-width:1080px;
+
+}

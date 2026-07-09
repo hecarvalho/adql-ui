@@ -1,257 +1,256 @@
-/* ==================================================
-   ADQL UI
-   Comparison Metrics v2
-================================================== */
-
-:root{
-
-    --navy:#08264B;
-    --gold:#C69214;
-
-    --bg:#F7F6F2;
-
-    --text:#08264B;
-
-    --muted:#7D8793;
-
-    --line:#DFE3E8;
-
+:root {
+  --bg: #f7f4ed;
+  --paper: #fffaf0;
+  --navy: #071f3d;
+  --gold: #c58b12;
+  --muted: #667080;
+  --line: #d8d1c4;
+  --soft: #e9e2d5;
 }
 
-*{
-
-    margin:0;
-
-    padding:0;
-
-    box-sizing:border-box;
-
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
 }
 
-body{
-
-    background:var(--bg);
-
-    font-family:Inter,sans-serif;
-
-    color:var(--text);
-
+body {
+  background: var(--bg);
+  color: var(--navy);
+  font-family: Arial, Helvetica, sans-serif;
 }
 
-
-/* ========================= */
-
-.comparison{
-
-    max-width:900px;
-
-    margin:80px auto;
-
-    padding:70px;
-
+.adql-canvas {
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  padding: 32px;
 }
 
-
-/* ========================= */
-
-.eyebrow{
-
-    color:var(--gold);
-
-    font-size:.72rem;
-
-    letter-spacing:.28em;
-
-    font-weight:700;
-
-    text-transform:uppercase;
-
+.adql-sheet {
+  position: relative;
+  width: min(1080px, 100%);
+  min-height: 1350px;
+  padding: 72px 78px;
+  overflow: hidden;
+  background:
+    radial-gradient(circle at 88% 8%, rgba(197, 139, 18, .12), transparent 24%),
+    linear-gradient(180deg, #fffaf0 0%, #f7f4ed 100%);
+  border: 1px solid var(--line);
 }
 
-.match-title{
-
-    margin-top:22px;
-
-    font-size:4rem;
-
-    line-height:.95;
-
-    color:var(--navy);
-
-    font-weight:800;
-
+.adql-dots {
+  position: absolute;
+  width: 130px;
+  height: 130px;
+  opacity: .26;
+  background-image: radial-gradient(var(--navy) 1px, transparent 1px);
+  background-size: 13px 13px;
 }
 
-.match-title span{
-
-    color:var(--gold);
-
-    padding:0 14px;
-
+.dots-a {
+  top: 105px;
+  left: 34px;
 }
 
-.competition{
-
-    margin-top:18px;
-
-    color:var(--muted);
-
-    font-size:1rem;
-
+.dots-b {
+  right: 58px;
+  bottom: 150px;
 }
 
-
-/* ========================= */
-
-.metric{
-
-    padding:34px 0;
-
-    border-top:1px solid var(--line);
-
+.adql-line {
+  position: absolute;
+  width: 220px;
+  height: 220px;
+  right: 70px;
+  top: 90px;
+  opacity: .16;
+  border: 1px solid var(--gold);
+  border-radius: 50%;
 }
 
-.metric:first-child{
-
-    margin-top:60px;
-
+.kicker {
+  color: var(--gold);
+  font-size: 13px;
+  font-weight: 900;
+  letter-spacing: .32em;
+  text-transform: uppercase;
+  margin-bottom: 18px;
 }
 
-
-/* ========================= */
-
-.metric-header{
-
-    display:flex;
-
-    justify-content:space-between;
-
-    margin-bottom:14px;
-
+.title-area {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  justify-content: space-between;
+  gap: 40px;
+  padding-bottom: 34px;
+  border-bottom: 2px solid var(--navy);
 }
 
-.metric-label{
-
-    text-transform:uppercase;
-
-    letter-spacing:.18em;
-
-    font-size:.72rem;
-
-    color:var(--muted);
-
-    font-weight:700;
-
+h1 {
+  max-width: 760px;
+  font-size: clamp(58px, 8vw, 112px);
+  line-height: .88;
+  letter-spacing: -.06em;
+  text-transform: uppercase;
 }
 
-
-/* ========================= */
-
-.metric-values{
-
-    display:grid;
-
-    grid-template-columns:90px 1fr 90px;
-
-    gap:24px;
-
-    align-items:center;
-
+#matchSubtitle {
+  margin-top: 18px;
+  color: var(--muted);
+  font-size: 17px;
+  letter-spacing: .05em;
 }
 
-.value{
-
-    font-size:2rem;
-
-    font-weight:800;
-
-    color:var(--navy);
-
+.version {
+  text-align: right;
+  color: var(--muted);
+  font-size: 11px;
+  letter-spacing: .22em;
+  text-transform: uppercase;
 }
 
-.value:last-child{
-
-    text-align:right;
-
+.version strong {
+  display: block;
+  color: var(--gold);
+  font-size: 30px;
+  letter-spacing: 0;
+  margin-top: 8px;
 }
 
-
-/* ========================= */
-
-.bar{
-
-    height:8px;
-
-    background:#ECECEC;
-
-    border-radius:999px;
-
-    overflow:hidden;
-
+.teams {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 34px;
+  padding-bottom: 20px;
+  border-bottom: 1px solid var(--line);
+  color: var(--gold);
+  font-size: 13px;
+  font-weight: 900;
+  letter-spacing: .28em;
+  text-transform: uppercase;
 }
 
-.bar-fill{
-
-    height:100%;
-
-    width:0;
-
-    background:var(--gold);
-
-    transition:width .8s ease;
-
+.metrics {
+  position: relative;
+  z-index: 2;
 }
 
-
-/* ========================= */
-
-.comparison-footer{
-
-    margin-top:70px;
-
-    border-top:1px solid var(--line);
-
-    padding-top:24px;
-
-    display:flex;
-
-    justify-content:space-between;
-
-    color:var(--muted);
-
-    font-size:.82rem;
-
+.metric {
+  padding: 38px 0;
+  border-bottom: 1px solid var(--line);
 }
 
-
-/* ========================= */
-
-@media(max-width:768px){
-
-.comparison{
-
-    padding:30px;
-
+.metric-name {
+  color: var(--muted);
+  font-size: 13px;
+  font-weight: 900;
+  letter-spacing: .24em;
+  text-transform: uppercase;
+  margin-bottom: 18px;
 }
 
-.match-title{
-
-    font-size:2.6rem;
-
+.metric-values {
+  display: grid;
+  grid-template-columns: 160px 1fr 160px;
+  gap: 32px;
+  align-items: center;
 }
 
-.metric-values{
-
-    grid-template-columns:70px 1fr 70px;
-
-    gap:16px;
-
+.value {
+  font-size: 48px;
+  font-weight: 900;
+  letter-spacing: -.06em;
+  color: var(--navy);
 }
 
-.value{
-
-    font-size:1.35rem;
-
+.value.away {
+  text-align: right;
 }
 
+.metric-visual {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.compare-line {
+  position: relative;
+  height: 3px;
+  background: var(--line);
+}
+
+.compare-fill {
+  position: absolute;
+  left: 0;
+  top: -5px;
+  height: 13px;
+  background: var(--gold);
+  width: 50%;
+}
+
+.compare-node {
+  position: absolute;
+  top: -8px;
+  width: 19px;
+  height: 19px;
+  border: 2px solid var(--navy);
+  border-radius: 50%;
+  background: var(--paper);
+  transform: translateX(-50%);
+}
+
+.metric-note {
+  text-align: center;
+  color: var(--muted);
+  font-size: 11px;
+  letter-spacing: .15em;
+  text-transform: uppercase;
+}
+
+.footer {
+  display: flex;
+  justify-content: space-between;
+  gap: 24px;
+  margin-top: 48px;
+  padding-top: 24px;
+  border-top: 1px solid var(--line);
+  color: var(--muted);
+  font-size: 12px;
+  letter-spacing: .13em;
+  text-transform: uppercase;
+}
+
+@media (max-width: 760px) {
+  .adql-canvas {
+    padding: 18px;
+  }
+
+  .adql-sheet {
+    min-height: auto;
+    padding: 34px 28px;
+  }
+
+  .title-area,
+  .footer {
+    flex-direction: column;
+  }
+
+  .version {
+    text-align: left;
+  }
+
+  .metric-values {
+    grid-template-columns: 82px 1fr 82px;
+    gap: 16px;
+  }
+
+  .value {
+    font-size: 30px;
+  }
+
+  .teams {
+    font-size: 10px;
+  }
 }

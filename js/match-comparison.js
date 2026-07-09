@@ -1,140 +1,249 @@
-/* ==========================================
+/* ==========================================================
    ADQL UI
-   Comparison Metrics v2
-========================================== */
+   MATCH COMPARISON
+========================================================== */
+
 
 const match = {
 
-    home: "Brasil",
+  home: "França",
 
-    away: "Japão",
+  away: "Marrocos",
 
-    competition: "Eliminatórias da Copa do Mundo",
+  stage: "Quartas de final",
 
-    date: "10 Jun 2026",
+  competition: "Copa do Mundo 2026",
 
-    stats: [
+  stats: [
 
-        {
-            label: "Posse de bola",
-            home: 62,
-            away: 38,
-            suffix: "%"
-        },
+    {
+      label: "Posse de bola",
+      home: 58,
+      away: 42,
+      suffix: "%"
+    },
 
-        {
-            label: "Expected Goals (xG)",
-            home: 2.12,
-            away: 0.26,
-            decimals: 2
-        },
+    {
+      label: "Expected Goals (xG)",
+      home: 1.74,
+      away: 1.08,
+      decimals: 2
+    },
 
-        {
-            label: "Finalizações",
-            home: 19,
-            away: 5
-        },
+    {
+      label: "Finalizações",
+      home: 14,
+      away: 9
+    },
 
-        {
-            label: "Passes certos",
-            home: 652,
-            away: 418
-        },
+    {
+      label: "Passes certos",
+      home: 541,
+      away: 392
+    },
 
-        {
-            label: "Recepções no terço final",
-            home: 250,
-            away: 81
-        }
+    {
+      label: "Recuperações no campo ofensivo",
+      home: 37,
+      away: 29
+    }
 
-    ]
+  ]
 
 };
 
-/* ==========================================
+
+/* ==========================================================
    HEADER
-========================================== */
-
-document.querySelector(".match-title").innerHTML =
-`
-${match.home}
-<span>×</span>
-${match.away}
-`;
-
-document.querySelector(".competition").textContent =
-`${match.competition} • ${match.date}`;
+========================================================== */
 
 
-/* ==========================================
-   BUILD METRICS
-========================================== */
+document
+  .getElementById("homeTitle")
+  .textContent = match.home;
 
-const wrapper =
-document.querySelector("#comparisonMetrics");
 
-match.stats.forEach(stat => {
+document
+  .getElementById("awayTitle")
+  .textContent = match.away;
 
-    const max = Math.max(stat.home, stat.away);
 
-    const homeWidth = (stat.home / max) * 100;
+document
+  .getElementById("matchSubtitle")
+  .textContent =
+  `${match.stage} • ${match.competition}`;
 
-    const suffix = stat.suffix ?? "";
 
-    const format = (value) => {
+document
+  .getElementById("homeName")
+  .textContent = match.home;
 
-        if(stat.decimals){
 
-            return value.toFixed(stat.decimals);
+document
+  .getElementById("awayName")
+  .textContent = match.away;
 
-        }
 
-        return value;
+/* ==========================================================
+   METRICS
+========================================================== */
 
-    };
 
-    wrapper.innerHTML += `
+const metrics =
+  document.getElementById("metrics");
 
-<div class="metric">
 
-    <div class="metric-header">
+const formatValue = (value, stat) => {
 
-        <div class="metric-label">
+  const suffix =
+    stat.suffix ?? "";
 
-            ${stat.label}
+  if(stat.decimals){
 
-        </div>
+    return (
+      value.toFixed(stat.decimals)
+      + suffix
+    );
+
+  }
+
+  return (
+    value
+    + suffix
+  );
+
+};
+
+
+match.stats.forEach((stat) => {
+
+  const total =
+    stat.home
+    + stat.away;
+
+
+  const homeShare =
+    total === 0
+      ? 50
+      : (stat.home / total) * 100;
+
+
+  const difference =
+    stat.home
+    - stat.away;
+
+
+  const winningTeam =
+    difference === 0
+      ? "equilíbrio"
+      : difference > 0
+        ? match.home
+        : match.away;
+
+
+  const differenceValue =
+    difference === 0
+      ? "0"
+      : `${
+          difference > 0
+            ? "+"
+            : ""
+        }${
+          formatValue(
+            Math.abs(difference),
+            stat
+          )
+        }`;
+
+
+  const item =
+    document.createElement(
+      "article"
+    );
+
+
+  item.className =
+    "mc-metric";
+
+
+  item.innerHTML = `
+
+    <div class="mc-metric-name">
+
+      ${stat.label}
 
     </div>
 
-    <div class="metric-values">
 
-        <div class="value">
+    <div class="mc-metric-values">
 
-            ${format(stat.home)}${suffix}
+
+      <div class="mc-value home">
+
+        ${formatValue(
+          stat.home,
+          stat
+        )}
+
+      </div>
+
+
+      <div class="mc-visual">
+
+
+        <div class="mc-line">
+
+          <div
+            class="mc-fill"
+            style="
+              width:
+              ${homeShare}%
+            "
+          ></div>
+
+
+          <div
+            class="mc-node"
+            style="
+              left:
+              ${homeShare}%
+            "
+          ></div>
 
         </div>
 
-        <div class="bar">
 
-            <div
-                class="bar-fill"
-                style="width:${homeWidth}%">
+        <div class="mc-note">
 
-            </div>
+          <strong>
 
-        </div>
+            ${differenceValue}
 
-        <div class="value">
+          </strong>
 
-            ${format(stat.away)}${suffix}
+          ${winningTeam}
 
         </div>
+
+
+      </div>
+
+
+      <div class="mc-value away">
+
+        ${formatValue(
+          stat.away,
+          stat
+        )}
+
+      </div>
+
 
     </div>
 
-</div>
+  `;
 
-`;
+
+  metrics.appendChild(item);
 
 });

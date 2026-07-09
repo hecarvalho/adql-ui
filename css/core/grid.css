@@ -1,0 +1,25 @@
+.adql-grid{
+  display:grid;
+  grid-template-columns:repeat(12,1fr);
+  gap:24px;
+}
+
+.col-12{grid-column:span 12;}
+.col-8{grid-column:span 8;}
+.col-6{grid-column:span 6;}
+.col-4{grid-column:span 4;}
+.col-3{grid-column:span 3;}
+
+@media(max-width:760px){
+  .adql-grid{
+    grid-template-columns:1fr;
+  }
+
+  .col-12,
+  .col-8,
+  .col-6,
+  .col-4,
+  .col-3{
+    grid-column:span 1;
+  }
+}
