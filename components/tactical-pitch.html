@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ADQL UI — Tactical Pitch</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Barlow+Semi+Condensed:wght@500;600;700;800;900&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+
+  <link rel="stylesheet" href="../css/core/core.css" />
+  <link rel="stylesheet" href="../css/components/tactical-pitch.css" />
+</head>
+
+<body>
+  <main class="adql-canvas">
+    <section class="tp-poster">
+
+      <div class="tp-background" aria-hidden="true">
+        <div class="tp-dot-grid tp-dot-grid-top"></div>
+        <div class="tp-dot-grid tp-dot-grid-bottom"></div>
+      </div>
+
+      <header class="tp-header">
+        <div>
+          <p class="tp-kicker">Campo tático</p>
+          <h1 id="pitchTitle" class="tp-title">Atrair por fora, atacar por dentro</h1>
+          <p id="pitchSubtitle" class="tp-subtitle">França × Marrocos • Quartas de final</p>
+        </div>
+
+        <div class="tp-index">
+          <span>ADQL UI</span>
+          <strong>C-03</strong>
+        </div>
+      </header>
+
+      <section class="tp-field-section">
+        <svg class="tp-pitch" viewBox="0 0 1000 620" aria-label="Campo tático">
+          <rect class="tp-field-bg" x="20" y="20" width="960" height="580" rx="18" />
+          <rect class="tp-field-line" x="54" y="54" width="892" height="512" rx="8" />
+
+          <line class="tp-field-line" x1="500" y1="54" x2="500" y2="566" />
+          <circle class="tp-field-line" cx="500" cy="310" r="78" />
+          <circle class="tp-dot" cx="500" cy="310" r="5" />
+
+          <rect class="tp-field-line" x="54" y="190" width="132" height="240" />
+          <rect class="tp-field-line" x="814" y="190" width="132" height="240" />
+
+          <rect class="tp-field-line" x="54" y="248" width="58" height="124" />
+          <rect class="tp-field-line" x="888" y="248" width="58" height="124" />
+
+          <circle class="tp-dot" cx="160" cy="310" r="5" />
+          <circle class="tp-dot" cx="840" cy="310" r="5" />
+
+          <path class="tp-arc" d="M186 238 A96 96 0 0 1 186 382" />
+          <path class="tp-arc" d="M814 238 A96 96 0 0 0 814 382" />
+
+          <g class="tp-grid-lines">
+            <line x1="202" y1="54" x2="202" y2="566" />
+            <line x1="352" y1="54" x2="352" y2="566" />
+            <line x1="648" y1="54" x2="648" y2="566" />
+            <line x1="798" y1="54" x2="798" y2="566" />
+
+            <line x1="54" y1="182" x2="946" y2="182" />
+            <line x1="54" y1="310" x2="946" y2="310" />
+            <line x1="54" y1="438" x2="946" y2="438" />
+          </g>
+        </svg>
+      </section>
+
+      <section class="tp-reading">
+        <span>Leitura tática</span>
+        <p id="readingText">A equipe atrai a pressão no corredor lateral, conecta por dentro e acelera no espaço antes da recomposição defensiva.</p>
+      </section>
+
+      <section class="tp-steps">
+        <article>
+          <strong>1</strong>
+          <div>
+            <h3>Atrair</h3>
+            <p>Fixar a pressão no corredor lateral.</p>
+          </div>
+        </article>
+
+        <article>
+          <strong>2</strong>
+          <div>
+            <h3>Conectar</h3>
+            <p>Encontrar o apoio por dentro.</p>
+          </div>
+        </article>
+
+        <article>
+          <strong>3</strong>
+          <div>
+            <h3>Acelerar</h3>
+            <p>Atacar o espaço livre no lado oposto.</p>
+          </div>
+        </article>
+      </section>
+
+      <footer class="tp-footer">
+        <div>
+          <strong>Fonte</strong>
+          <span id="sourceText">Vídeo-análise • Dados próprios</span>
+        </div>
+
+        <div class="tp-footer-brand">
+          <strong>Além das quatro linhas</strong>
+          <span>Henrique Carvalho</span>
+        </div>
+      </footer>
+
+      <div class="tp-wave" aria-hidden="true"></div>
+      <div class="tp-wave-dots" aria-hidden="true"></div>
+    </section>
+  </main>
+
+  <script src="../js/tactical-library.js"></script>
+  <script src="../js/tactical-engine.js"></script>
+  <script src="../plays/france-morocco.js"></script>
+  <script src="../js/tactical-pitch.js"></script>
+</body>
+</html>
