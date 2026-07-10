@@ -583,3 +583,109 @@
     padding-bottom: 40px;
   }
 }
+
+/* ==========================================================
+   C-05 V2 — MÚLTIPLOS RADARES
+========================================================== */
+
+.pc-radar-charts {
+  display: grid;
+  gap: 18px;
+  margin-top: 18px;
+}
+
+.pc-radar-card {
+  position: relative;
+  padding: 16px 16px 8px;
+  background: rgba(255, 253, 248, .72);
+  border: 1px solid var(--pc-border);
+  transition: border-color 150ms ease, box-shadow 150ms ease;
+  cursor: pointer;
+}
+
+.pc-radar-card:hover,
+.pc-radar-card.is-selected {
+  border-color: var(--pc-gold);
+}
+
+.pc-radar-card.is-selected {
+  box-shadow: 0 0 0 2px rgba(197, 139, 18, .08);
+}
+
+.pc-radar-card-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 18px;
+  padding: 2px 4px 10px;
+  border-bottom: 1px solid rgba(216, 209, 195, .82);
+}
+
+.pc-radar-card-copy {
+  min-width: 0;
+}
+
+.pc-radar-card-kicker {
+  display: block;
+  color: var(--pc-gold);
+  font-family: Inter, Arial, sans-serif;
+  font-size: 9px;
+  font-weight: 900;
+  letter-spacing: .16em;
+  text-transform: uppercase;
+}
+
+.pc-radar-card-title {
+  margin-top: 5px;
+  color: var(--pc-navy);
+  font-family: Inter, Arial, sans-serif;
+  font-size: 15px;
+  font-weight: 900;
+  line-height: 1.15;
+  text-transform: uppercase;
+}
+
+.pc-radar-card-subtitle {
+  margin-top: 5px;
+  color: var(--pc-muted);
+  font-family: Inter, Arial, sans-serif;
+  font-size: 10px;
+  font-weight: 600;
+  line-height: 1.35;
+}
+
+.pc-radar-card-meta {
+  flex: 0 0 auto;
+  color: var(--pc-muted);
+  font-family: Inter, Arial, sans-serif;
+  font-size: 9px;
+  font-weight: 800;
+  letter-spacing: .08em;
+  text-align: right;
+  text-transform: uppercase;
+}
+
+.pc-radar-card .pc-radar {
+  margin-top: 2px;
+}
+
+.pc-radar-empty {
+  padding: 42px 24px;
+  border: 1px dashed var(--pc-border);
+  color: var(--pc-muted);
+  font-family: Inter, Arial, sans-serif;
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1.5;
+  text-align: center;
+}
+
+@media (max-width: 760px) {
+  .pc-radar-card-head {
+    flex-direction: column;
+  }
+
+  .pc-radar-card-meta {
+    text-align: left;
+  }
+}

@@ -9,8 +9,6 @@ const playerComparisonData = {
     B: "Time B"
   },
 
-  radarMaxValue: 100,
-
   players: [
     {
       id: "player-a-1",
@@ -34,66 +32,74 @@ const playerComparisonData = {
     }
   ],
 
-  radarMetrics: [
+  radars: [
     {
-      id: "radar-creation",
-      label: "Criação",
-      values: {
-        "player-a-1": 84,
-        "player-a-2": 71,
-        "player-b-1": 76,
-        "player-b-2": 63
-      }
-    },
-    {
-      id: "radar-finishing",
-      label: "Finalização",
-      values: {
-        "player-a-1": 72,
-        "player-a-2": 86,
-        "player-b-1": 68,
-        "player-b-2": 79
-      }
-    },
-    {
-      id: "radar-progression",
-      label: "Progressão",
-      values: {
-        "player-a-1": 78,
-        "player-a-2": 62,
-        "player-b-1": 88,
-        "player-b-2": 70
-      }
-    },
-    {
-      id: "radar-dribble",
-      label: "Drible",
-      values: {
-        "player-a-1": 66,
-        "player-a-2": 81,
-        "player-b-1": 73,
-        "player-b-2": 85
-      }
-    },
-    {
-      id: "radar-pressing",
-      label: "Pressão",
-      values: {
-        "player-a-1": 75,
-        "player-a-2": 68,
-        "player-b-1": 82,
-        "player-b-2": 74
-      }
-    },
-    {
-      id: "radar-passing",
-      label: "Passe",
-      values: {
-        "player-a-1": 88,
-        "player-a-2": 76,
-        "player-b-1": 79,
-        "player-b-2": 67
-      }
+      id: "radar-offensive-profile",
+      title: "Perfil ofensivo",
+      subtitle: "Criação, finalização e progressão",
+      maxValue: 100,
+      metrics: [
+        {
+          id: "radar-creation",
+          label: "Criação",
+          values: {
+            "player-a-1": 84,
+            "player-a-2": 71,
+            "player-b-1": 76,
+            "player-b-2": 63
+          }
+        },
+        {
+          id: "radar-finishing",
+          label: "Finalização",
+          values: {
+            "player-a-1": 72,
+            "player-a-2": 86,
+            "player-b-1": 68,
+            "player-b-2": 79
+          }
+        },
+        {
+          id: "radar-progression",
+          label: "Progressão",
+          values: {
+            "player-a-1": 78,
+            "player-a-2": 62,
+            "player-b-1": 88,
+            "player-b-2": 70
+          }
+        },
+        {
+          id: "radar-dribble",
+          label: "Drible",
+          values: {
+            "player-a-1": 66,
+            "player-a-2": 81,
+            "player-b-1": 73,
+            "player-b-2": 85
+          }
+        },
+        {
+          id: "radar-pressing",
+          label: "Pressão",
+          values: {
+            "player-a-1": 75,
+            "player-a-2": 68,
+            "player-b-1": 82,
+            "player-b-2": 74
+          }
+        },
+        {
+          id: "radar-passing",
+          label: "Passe",
+          values: {
+            "player-a-1": 88,
+            "player-a-2": 76,
+            "player-b-1": 79,
+            "player-b-2": 67
+          }
+        }
+      ]
     }
   ],
 
@@ -128,8 +134,8 @@ const playerComparisonData = {
 
   readingTitle: "Perfis diferentes, impacto comparável",
   readingText:
-    "O radar mostra onde cada jogador concentra seu impacto. As barras ajudam a comparar métricas objetivas na mesma escala.",
+    "Os radares mostram diferentes dimensões do perfil. As barras ajudam a comparar métricas objetivas na mesma escala.",
   keyText:
-    "Use o radar para enxergar o perfil e as barras para quantificar diferenças específicas.",
+    "Separe os radares por tema para tornar a comparação mais clara.",
   source: "Dados próprios • Modelo ADQL"
 };

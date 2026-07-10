@@ -45,8 +45,18 @@ function pciGetState(frame) {
   if (!state) {
     state = {
       selectedPlayerId: null,
+      selectedRadarId: null,
       selectedRadarMetricId: null,
       selectedBarMetricId: null,
+      selectedBarEntryId: null,
+      openSections: {
+        players: false,
+        radars: true,
+        bars: false,
+        text: false
+      },
+      openBarEntries: {},
+      pendingWorkspaceRefresh: false,
       drag: null,
       boundDocument: null,
       renderWorkspace: null,
@@ -168,6 +178,45 @@ function pciDetails(title, eyebrow = "") {
   summary.appendChild(titleWrap);
   summary.appendChild(pciElement("span", "pci-details-plus", "+"));
   details.appendChild(summary);
+
+  return details;
+}
+
+function pciWrapCardInCollapse({
+  card,
+  state,
+  sectionKey,
+  defaultOpen = false
+}) {
+  state.openSections ||= {};
+
+  const details = pciElement("details", "pci-section-details");
+  const savedState = state.openSections[sectionKey];
+
+  details.open =
+    typeof savedState === "boolean"
+      ? savedState
+      : defaultOpen;
+
+  const summary = pciElement("summary", "pci-section-summary");
+  const head = card.firstElementChild?.classList?.contains("pci-card-head")
+    ? card.firstElementChild
+    : null;
+
+  if (head) {
+    summary.appendChild(head);
+  }
+
+  summary.appendChild(pciElement("span", "pci-details-plus", "+"));
+  details.appendChild(summary);
+
+  const body = pciElement("div", "pci-section-body");
+  body.appendChild(card);
+  details.appendChild(body);
+
+  details.addEventListener("toggle", () => {
+    state.openSections[sectionKey] = details.open;
+  });
 
   return details;
 }
@@ -568,6 +617,104 @@ function ensurePlayerComparisonInspectorStyles() {
       text-align: center;
     }
 
+    .pci-section-details {
+      border: 1px solid #d8d1c3;
+      border-radius: 14px;
+      background: rgba(255,253,248,.78);
+      box-shadow: 0 8px 22px rgba(7,31,61,.04);
+      overflow: hidden;
+    }
+
+    .pci-section-summary {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 14px 15px;
+      cursor: pointer;
+      list-style: none;
+      background: rgba(255,253,248,.92);
+    }
+
+    .pci-section-summary::-webkit-details-marker {
+      display: none;
+    }
+
+    .pci-section-summary > .pci-card-head {
+      width: 100%;
+      min-width: 0;
+    }
+
+    .pci-section-summary .pci-card-actions {
+      flex-shrink: 0;
+    }
+
+    .pci-section-details[open] > .pci-section-summary {
+      border-bottom: 1px solid #e2dbcf;
+    }
+
+    .pci-section-details[open] > .pci-section-summary .pci-details-plus {
+      transform: rotate(45deg);
+    }
+
+    .pci-section-body > .pci-card {
+      border: 0;
+      border-radius: 0;
+      background: transparent;
+      box-shadow: none;
+      padding: 14px 15px 15px;
+    }
+
+    .pci-section-body > .pci-card > :first-child {
+      margin-top: 0;
+    }
+
+    .pci-entry-details {
+      border: 1px solid #ddd6ca;
+      border-radius: 10px;
+      background: #fff;
+      overflow: hidden;
+    }
+
+    .pci-entry-details > summary {
+      display: grid;
+      grid-template-columns: auto minmax(0, 1fr) auto auto;
+      align-items: center;
+      gap: 9px;
+      min-height: 46px;
+      padding: 9px 10px;
+      cursor: pointer;
+      list-style: none;
+    }
+
+    .pci-entry-details > summary::-webkit-details-marker {
+      display: none;
+    }
+
+    .pci-entry-details[open] > summary {
+      border-bottom: 1px solid #ece6dc;
+      background: rgba(7,31,61,.025);
+    }
+
+    .pci-entry-details > summary .pci-details-plus {
+      font-size: 17px;
+    }
+
+    .pci-entry-details[open] > summary .pci-details-plus {
+      transform: rotate(45deg);
+    }
+
+    .pci-entry-details-body {
+      padding: 0 10px 10px;
+    }
+
+    .pci-entry-details-body > .pci-field:first-child {
+      margin-top: 10px;
+    }
+
+    .pci-entry-details .pci-row-value {
+      white-space: nowrap;
+    }
+
     .pci-details {
       border: 1px solid #d8d1c3;
       border-radius: 13px;
@@ -626,6 +773,7 @@ function ensurePlayerComparisonInspectorStyles() {
   document.head.appendChild(style);
 }
 
+
 function pciNormalizeData(win, data) {
   if (typeof win.pcNormalizeData === "function") {
     win.pcNormalizeData(data);
@@ -650,6 +798,10 @@ function pciPlayerColor(win, data, playerId) {
     : "#C58B12";
 }
 
+function pciGetRadar(data, radarId) {
+  return data.radars.find((radar) => radar.id === radarId) ?? null;
+}
+
 function pciAddPlayer(data, team) {
   const count = data.players.filter((player) => player.team === team).length + 1;
   const player = {
@@ -660,14 +812,11 @@ function pciAddPlayer(data, team) {
 
   data.players.push(player);
 
-  data.radarMetrics.forEach((metric) => {
-    metric.values ||= {};
-    metric.values[player.id] = Math.round(data.radarMaxValue * 0.5);
-  });
-
-  data.barMetrics.forEach((metric) => {
-    metric.values ||= {};
-    metric.values[player.id] = 0;
+  data.radars.forEach((radar) => {
+    radar.metrics.forEach((metric) => {
+      metric.values ||= {};
+      metric.values[player.id] = Math.round(radar.maxValue * 0.5);
+    });
   });
 
   return player;
@@ -676,10 +825,12 @@ function pciAddPlayer(data, team) {
 function pciRemovePlayer(data, playerId) {
   data.players = data.players.filter((player) => player.id !== playerId);
 
-  [...data.radarMetrics, ...data.barMetrics].forEach((metric) => {
-    if (metric.values) {
-      delete metric.values[playerId];
-    }
+  data.radars.forEach((radar) => {
+    radar.metrics.forEach((metric) => {
+      if (metric.values) {
+        delete metric.values[playerId];
+      }
+    });
   });
 }
 
@@ -698,36 +849,51 @@ function pciDuplicatePlayer(data, playerId) {
 
   data.players.push(clone);
 
-  data.radarMetrics.forEach((metric) => {
-    metric.values ||= {};
-    metric.values[clone.id] = pciNumber(metric.values[source.id], 0);
-  });
-
-  data.barMetrics.forEach((metric) => {
-    metric.values ||= {};
-    metric.values[clone.id] = pciNumber(metric.values[source.id], 0);
+  data.radars.forEach((radar) => {
+    radar.metrics.forEach((metric) => {
+      metric.values ||= {};
+      metric.values[clone.id] = pciNumber(metric.values[source.id], 0);
+    });
   });
 
   return clone;
 }
 
-function pciAddRadarMetric(data) {
+function pciCreateDefaultRadarMetric(data, radar, index = 0) {
   const metric = {
-    id: pciUid("radar"),
-    label: `Métrica ${data.radarMetrics.length + 1}`,
+    id: pciUid("radar-metric"),
+    label: `Métrica ${index + 1}`,
     values: {}
   };
 
   data.players.forEach((player) => {
-    metric.values[player.id] = Math.round(data.radarMaxValue * 0.5);
+    metric.values[player.id] = Math.round(radar.maxValue * 0.5);
   });
 
-  data.radarMetrics.push(metric);
   return metric;
 }
 
-function pciDuplicateRadarMetric(data, metricId) {
-  const source = data.radarMetrics.find((metric) => metric.id === metricId);
+function pciAddRadar(data) {
+  const radar = {
+    id: pciUid("radar"),
+    title: `Radar ${data.radars.length + 1}`,
+    subtitle: "Perfil multidimensional",
+    maxValue: 100,
+    metrics: []
+  };
+
+  radar.metrics.push(
+    pciCreateDefaultRadarMetric(data, radar, 0),
+    pciCreateDefaultRadarMetric(data, radar, 1),
+    pciCreateDefaultRadarMetric(data, radar, 2)
+  );
+
+  data.radars.push(radar);
+  return radar;
+}
+
+function pciDuplicateRadar(data, radarId) {
+  const source = pciGetRadar(data, radarId);
 
   if (!source) {
     return null;
@@ -735,12 +901,42 @@ function pciDuplicateRadarMetric(data, metricId) {
 
   const clone = {
     id: pciUid("radar"),
+    title: `${source.title} cópia`,
+    subtitle: source.subtitle,
+    maxValue: source.maxValue,
+    metrics: source.metrics.map((metric) => ({
+      id: pciUid("radar-metric"),
+      label: metric.label,
+      values: { ...metric.values }
+    }))
+  };
+
+  const index = data.radars.findIndex((radar) => radar.id === radarId);
+  data.radars.splice(index + 1, 0, clone);
+  return clone;
+}
+
+function pciAddRadarMetric(data, radar) {
+  const metric = pciCreateDefaultRadarMetric(data, radar, radar.metrics.length);
+  radar.metrics.push(metric);
+  return metric;
+}
+
+function pciDuplicateRadarMetric(radar, metricId) {
+  const source = radar.metrics.find((metric) => metric.id === metricId);
+
+  if (!source) {
+    return null;
+  }
+
+  const clone = {
+    id: pciUid("radar-metric"),
     label: `${source.label} cópia`,
     values: { ...source.values }
   };
 
-  const index = data.radarMetrics.findIndex((metric) => metric.id === metricId);
-  data.radarMetrics.splice(index + 1, 0, clone);
+  const index = radar.metrics.findIndex((metric) => metric.id === metricId);
+  radar.metrics.splice(index + 1, 0, clone);
   return clone;
 }
 
@@ -751,12 +947,8 @@ function pciAddBarMetric(data) {
     unit: "",
     maxValue: 10,
     decimals: 1,
-    values: {}
+    entries: []
   };
-
-  data.players.forEach((player) => {
-    metric.values[player.id] = 0;
-  });
 
   data.barMetrics.push(metric);
   return metric;
@@ -775,7 +967,12 @@ function pciDuplicateBarMetric(data, metricId) {
     unit: source.unit,
     maxValue: source.maxValue,
     decimals: source.decimals,
-    values: { ...source.values }
+    entries: (source.entries || []).map((entry) => ({
+      id: pciUid("bar-player"),
+      team: entry.team,
+      name: entry.name,
+      value: pciNumber(entry.value, 0)
+    }))
   };
 
   const index = data.barMetrics.findIndex((metric) => metric.id === metricId);
@@ -783,7 +980,46 @@ function pciDuplicateBarMetric(data, metricId) {
   return clone;
 }
 
-function pciBuildHero({ data, state, rerender, renderWorkspace }) {
+function pciAddBarEntry(data, metric, team) {
+  metric.entries ||= [];
+
+  const count = metric.entries.filter((entry) => entry.team === team).length + 1;
+  const entry = {
+    id: pciUid("bar-player"),
+    team,
+    name: `Jogador ${team}${count}`,
+    value: 0
+  };
+
+  metric.entries.push(entry);
+  return entry;
+}
+
+function pciRemoveBarEntry(metric, entryId) {
+  metric.entries = (metric.entries || []).filter((entry) => entry.id !== entryId);
+}
+
+function pciDuplicateBarEntry(metric, entryId) {
+  const source = (metric.entries || []).find((entry) => entry.id === entryId);
+
+  if (!source) {
+    return null;
+  }
+
+  const clone = {
+    id: pciUid("bar-player"),
+    team: source.team,
+    name: `${source.name} cópia`,
+    value: pciNumber(source.value, 0)
+  };
+
+  const index = metric.entries.findIndex((entry) => entry.id === entryId);
+  metric.entries.splice(index + 1, 0, clone);
+  return clone;
+}
+
+
+function pciBuildHero({ data, state, rerender }) {
   const hero = pciElement("section", "pci-hero");
   const top = pciElement("div", "pci-hero-top");
   const copy = pciElement("div");
@@ -794,7 +1030,7 @@ function pciBuildHero({ data, state, rerender, renderWorkspace }) {
     pciElement(
       "p",
       "",
-      "Crie jogadores por equipe e depois construa o radar e as comparações em barras."
+      "Os jogadores dos radares e os jogadores das barras agora são independentes. Crie apenas quem participa de cada comparação."
     )
   );
 
@@ -808,6 +1044,7 @@ function pciBuildHero({ data, state, rerender, renderWorkspace }) {
       label: `Jogador ${data.teams.A}`,
       icon: "+",
       onClick: () => {
+        state.openSections.players = true;
         const player = pciAddPlayer(data, "A");
         state.selectedPlayerId = player.id;
         rerender(true);
@@ -820,6 +1057,7 @@ function pciBuildHero({ data, state, rerender, renderWorkspace }) {
       label: `Jogador ${data.teams.B}`,
       icon: "+",
       onClick: () => {
+        state.openSections.players = true;
         const player = pciAddPlayer(data, "B");
         state.selectedPlayerId = player.id;
         rerender(true);
@@ -859,7 +1097,7 @@ function pciBuildPlayerRow({ win, data, player, state, renderWorkspace, rerender
 }
 
 function pciBuildPlayersCard({ win, data, state, rerender, renderWorkspace }) {
-  const { card, head } = pciCard("Jogadores", "Elenco comparado");
+  const { card, head } = pciCard("Jogadores dos radares", "Elenco multidimensional");
   const headActions = pciElement("div", "pci-card-actions");
 
   headActions.appendChild(pciElement("span", "pci-count", String(data.players.length)));
@@ -869,13 +1107,16 @@ function pciBuildPlayersCard({ win, data, state, rerender, renderWorkspace }) {
       className: "pci-button pci-button-ghost pci-button-danger",
       disabled: !data.players.length,
       onClick: () => {
-        if (!confirm("Excluir todos os jogadores e seus valores?")) {
+        if (!confirm("Excluir todos os jogadores dos radares e seus valores? As barras serão mantidas.")) {
           return;
         }
 
         data.players = [];
-        data.radarMetrics.forEach((metric) => (metric.values = {}));
-        data.barMetrics.forEach((metric) => (metric.values = {}));
+        data.radars.forEach((radar) => {
+          radar.metrics.forEach((metric) => {
+            metric.values = {};
+          });
+        });
         state.selectedPlayerId = null;
         rerender(true);
       }
@@ -933,7 +1174,9 @@ function pciBuildPlayersCard({ win, data, state, rerender, renderWorkspace }) {
     const editor = pciElement("div", "pci-editor");
     const editorHead = pciElement("div", "pci-editor-head");
     editorHead.appendChild(pciElement("strong", "", "Editar jogador"));
-    editorHead.appendChild(pciElement("span", "", selected.team === "A" ? data.teams.A : data.teams.B));
+    editorHead.appendChild(
+      pciElement("span", "", selected.team === "A" ? data.teams.A : data.teams.B)
+    );
     editor.appendChild(editorHead);
 
     editor.appendChild(
@@ -1052,7 +1295,8 @@ function pciBuildPlayerValueRows({ win, data, metric, maxValue, step, decimals, 
 
     const update = (rawValue, source) => {
       const value = pciClamp(pciNumber(rawValue, 0), 0, maxValue);
-      metric.values[player.id] = decimals === 0 ? Math.round(value) : Number(value.toFixed(decimals));
+      metric.values[player.id] =
+        decimals === 0 ? Math.round(value) : Number(value.toFixed(decimals));
       numberInput.value = String(metric.values[player.id]);
       rangeInput.value = String(metric.values[player.id]);
       rerender(false);
@@ -1079,16 +1323,18 @@ function pciBuildPlayerValueRows({ win, data, metric, maxValue, step, decimals, 
 }
 
 function pciBuildRadarCard({ win, data, state, rerender, renderWorkspace }) {
-  const { card, head } = pciCard("Radar", "Perfil multidimensional");
+  const { card, head } = pciCard("Radares", "Perfis multidimensionais");
   const actions = pciElement("div", "pci-card-actions");
 
   actions.appendChild(
     pciButton({
-      label: "+ Métrica",
+      label: "+ Radar",
       className: "pci-button pci-button-ghost",
       onClick: () => {
-        const metric = pciAddRadarMetric(data);
-        state.selectedRadarMetricId = metric.id;
+        state.openSections.radars = true;
+        const radar = pciAddRadar(data);
+        state.selectedRadarId = radar.id;
+        state.selectedRadarMetricId = radar.metrics[0]?.id ?? null;
         rerender(true);
       }
     })
@@ -1096,11 +1342,16 @@ function pciBuildRadarCard({ win, data, state, rerender, renderWorkspace }) {
 
   actions.appendChild(
     pciButton({
-      label: "Limpar",
+      label: "Excluir todos",
       className: "pci-button pci-button-ghost pci-button-danger",
-      disabled: !data.radarMetrics.length,
+      disabled: !data.radars.length,
       onClick: () => {
-        data.radarMetrics = [];
+        if (!confirm("Excluir todos os radares? As barras serão mantidas.")) {
+          return;
+        }
+
+        data.radars = [];
+        state.selectedRadarId = null;
         state.selectedRadarMetricId = null;
         rerender(true);
       }
@@ -1109,10 +1360,169 @@ function pciBuildRadarCard({ win, data, state, rerender, renderWorkspace }) {
 
   head.appendChild(actions);
 
-  const list = pciElement("div", "pci-list");
+  const radarList = pciElement("div", "pci-list");
 
-  data.radarMetrics.forEach((metric) => {
-    list.appendChild(
+  data.radars.forEach((radar, index) => {
+    radarList.appendChild(
+      pciBuildMetricListRow({
+        metric: {
+          label: radar.title || `Radar ${index + 1}`
+        },
+        selected: state.selectedRadarId === radar.id,
+        summary: `${radar.metrics.length} métricas • escala ${radar.maxValue}`,
+        onSelect: () => {
+          state.selectedRadarId = radar.id;
+
+          if (!radar.metrics.some((metric) => metric.id === state.selectedRadarMetricId)) {
+            state.selectedRadarMetricId = radar.metrics[0]?.id ?? null;
+          }
+
+          renderWorkspace();
+          rerender(false);
+        }
+      })
+    );
+  });
+
+  if (!data.radars.length) {
+    radarList.appendChild(
+      pciElement(
+        "div",
+        "pci-empty",
+        "Clique em “+ Radar”. Cada radar pode ter título, escala e conjunto de métricas próprios."
+      )
+    );
+  }
+
+  card.appendChild(radarList);
+
+  const selectedRadar = pciGetRadar(data, state.selectedRadarId);
+
+  if (!selectedRadar) {
+    return card;
+  }
+
+  const radarEditor = pciElement("div", "pci-editor");
+  const radarEditorHead = pciElement("div", "pci-editor-head");
+  radarEditorHead.appendChild(pciElement("strong", "", "Editar radar"));
+  radarEditorHead.appendChild(
+    pciElement("span", "", `${selectedRadar.metrics.length} eixos`)
+  );
+  radarEditor.appendChild(radarEditorHead);
+
+  radarEditor.appendChild(
+    pciField({
+      label: "Título do radar",
+      value: selectedRadar.title,
+      onInput: (value) => {
+        selectedRadar.title = value;
+        rerender(true);
+      }
+    })
+  );
+
+  radarEditor.appendChild(
+    pciField({
+      label: "Subtítulo",
+      value: selectedRadar.subtitle,
+      onInput: (value) => {
+        selectedRadar.subtitle = value;
+        rerender(false);
+      }
+    })
+  );
+
+  radarEditor.appendChild(
+    pciField({
+      label: "Valor máximo da escala",
+      value: selectedRadar.maxValue,
+      type: "number",
+      min: 1,
+      step: 1,
+      onInput: (value) => {
+        const oldMax = Math.max(1, pciNumber(selectedRadar.maxValue, 100));
+        const nextMax = Math.max(1, pciNumber(value, oldMax));
+        const ratio = nextMax / oldMax;
+
+        selectedRadar.maxValue = nextMax;
+        selectedRadar.metrics.forEach((metric) => {
+          Object.keys(metric.values || {}).forEach((playerId) => {
+            metric.values[playerId] = pciClamp(
+              Math.round(pciNumber(metric.values[playerId], 0) * ratio),
+              0,
+              nextMax
+            );
+          });
+        });
+
+        rerender(true);
+      }
+    })
+  );
+
+  const radarEditorActions = pciElement("div", "pci-editor-actions");
+  radarEditorActions.appendChild(
+    pciButton({
+      label: "Duplicar radar",
+      className: "pci-button pci-button-ghost",
+      onClick: () => {
+        const clone = pciDuplicateRadar(data, selectedRadar.id);
+        state.selectedRadarId = clone?.id ?? selectedRadar.id;
+        state.selectedRadarMetricId = clone?.metrics[0]?.id ?? null;
+        rerender(true);
+      }
+    })
+  );
+  radarEditorActions.appendChild(
+    pciButton({
+      label: "Excluir radar",
+      className: "pci-button pci-button-ghost pci-button-danger",
+      onClick: () => {
+        data.radars = data.radars.filter((radar) => radar.id !== selectedRadar.id);
+        state.selectedRadarId = data.radars[0]?.id ?? null;
+        state.selectedRadarMetricId = data.radars[0]?.metrics[0]?.id ?? null;
+        rerender(true);
+      }
+    })
+  );
+  radarEditor.appendChild(radarEditorActions);
+  card.appendChild(radarEditor);
+
+  const metricEditor = pciElement("div", "pci-editor");
+  const metricHead = pciElement("div", "pci-editor-head");
+  metricHead.appendChild(pciElement("strong", "", "Métricas deste radar"));
+
+  const metricActions = pciElement("div", "pci-card-actions");
+  metricActions.appendChild(
+    pciButton({
+      label: "+ Métrica",
+      className: "pci-button pci-button-ghost",
+      onClick: () => {
+        const metric = pciAddRadarMetric(data, selectedRadar);
+        state.selectedRadarMetricId = metric.id;
+        rerender(true);
+      }
+    })
+  );
+  metricActions.appendChild(
+    pciButton({
+      label: "Limpar",
+      className: "pci-button pci-button-ghost pci-button-danger",
+      disabled: !selectedRadar.metrics.length,
+      onClick: () => {
+        selectedRadar.metrics = [];
+        state.selectedRadarMetricId = null;
+        rerender(true);
+      }
+    })
+  );
+  metricHead.appendChild(metricActions);
+  metricEditor.appendChild(metricHead);
+
+  const metricList = pciElement("div", "pci-list");
+
+  selectedRadar.metrics.forEach((metric) => {
+    metricList.appendChild(
       pciBuildMetricListRow({
         metric,
         selected: state.selectedRadarMetricId === metric.id,
@@ -1126,99 +1536,108 @@ function pciBuildRadarCard({ win, data, state, rerender, renderWorkspace }) {
     );
   });
 
-  if (!data.radarMetrics.length) {
-    list.appendChild(
+  if (!selectedRadar.metrics.length) {
+    metricList.appendChild(
       pciElement(
         "div",
         "pci-empty",
-        "Adicione pelo menos três métricas para criar um radar completo."
+        "Adicione pelo menos três métricas para formar um radar completo."
       )
     );
   }
 
-  card.appendChild(list);
+  metricEditor.appendChild(metricList);
 
-  const selected = data.radarMetrics.find((metric) => metric.id === state.selectedRadarMetricId);
+  const selectedMetric = selectedRadar.metrics.find(
+    (metric) => metric.id === state.selectedRadarMetricId
+  );
 
-  if (selected) {
-    const editor = pciElement("div", "pci-editor");
-    const editorHead = pciElement("div", "pci-editor-head");
-    editorHead.appendChild(pciElement("strong", "", "Editar métrica do radar"));
-    editorHead.appendChild(pciElement("span", "", `${data.radarMetrics.length} eixos`));
-    editor.appendChild(editorHead);
+  if (selectedMetric) {
+    const selectedMetricEditor = pciElement("div", "pci-editor");
+    const selectedMetricHead = pciElement("div", "pci-editor-head");
+    selectedMetricHead.appendChild(pciElement("strong", "", "Editar métrica"));
+    selectedMetricHead.appendChild(
+      pciElement("span", "", selectedRadar.title || "Radar")
+    );
+    selectedMetricEditor.appendChild(selectedMetricHead);
 
-    editor.appendChild(
+    selectedMetricEditor.appendChild(
       pciField({
         label: "Nome da métrica",
-        value: selected.label,
+        value: selectedMetric.label,
         onInput: (value) => {
-          selected.label = value;
+          selectedMetric.label = value;
           rerender(true);
         }
       })
     );
 
-    editor.appendChild(
+    selectedMetricEditor.appendChild(
       pciBuildPlayerValueRows({
         win,
         data,
-        metric: selected,
-        maxValue: data.radarMaxValue,
+        metric: selectedMetric,
+        maxValue: selectedRadar.maxValue,
         step: 1,
         decimals: 0,
         rerender
       })
     );
 
-    editor.appendChild(
+    selectedMetricEditor.appendChild(
       pciElement(
         "div",
         "pci-hint",
-        "Também é possível arrastar os pontos diretamente no radar para alterar o valor do jogador selecionado naquele eixo."
+        "Você também pode arrastar os pontos diretamente no radar selecionado."
       )
     );
 
-    const editorActions = pciElement("div", "pci-editor-actions");
-    editorActions.appendChild(
+    const selectedMetricActions = pciElement("div", "pci-editor-actions");
+    selectedMetricActions.appendChild(
       pciButton({
         label: "Duplicar",
         className: "pci-button pci-button-ghost",
         onClick: () => {
-          const clone = pciDuplicateRadarMetric(data, selected.id);
-          state.selectedRadarMetricId = clone?.id ?? selected.id;
+          const clone = pciDuplicateRadarMetric(selectedRadar, selectedMetric.id);
+          state.selectedRadarMetricId = clone?.id ?? selectedMetric.id;
           rerender(true);
         }
       })
     );
-    editorActions.appendChild(
+    selectedMetricActions.appendChild(
       pciButton({
         label: "Excluir",
         className: "pci-button pci-button-ghost pci-button-danger",
         onClick: () => {
-          data.radarMetrics = data.radarMetrics.filter((metric) => metric.id !== selected.id);
-          state.selectedRadarMetricId = data.radarMetrics[0]?.id ?? null;
+          selectedRadar.metrics = selectedRadar.metrics.filter(
+            (metric) => metric.id !== selectedMetric.id
+          );
+          state.selectedRadarMetricId = selectedRadar.metrics[0]?.id ?? null;
           rerender(true);
         }
       })
     );
-    editor.appendChild(editorActions);
-    card.appendChild(editor);
+    selectedMetricEditor.appendChild(selectedMetricActions);
+    metricEditor.appendChild(selectedMetricEditor);
   }
 
+  card.appendChild(metricEditor);
   return card;
 }
 
 function pciBuildBarsCard({ win, data, state, rerender, renderWorkspace }) {
-  const { card, head } = pciCard("Barras comparativas", "Comparação direta");
+  const { card, head } = pciCard("Barras comparativas", "Modelo independente");
   const actions = pciElement("div", "pci-card-actions");
 
   actions.appendChild(
     pciButton({
-      label: "+ Barra",
+      label: "+ Métrica",
       className: "pci-button pci-button-ghost",
       onClick: () => {
+        state.openSections.bars = true;
         const metric = pciAddBarMetric(data);
         state.selectedBarMetricId = metric.id;
+        state.selectedBarEntryId = null;
         rerender(true);
       }
     })
@@ -1232,6 +1651,7 @@ function pciBuildBarsCard({ win, data, state, rerender, renderWorkspace }) {
       onClick: () => {
         data.barMetrics = [];
         state.selectedBarMetricId = null;
+        state.selectedBarEntryId = null;
         rerender(true);
       }
     })
@@ -1239,16 +1659,31 @@ function pciBuildBarsCard({ win, data, state, rerender, renderWorkspace }) {
 
   head.appendChild(actions);
 
+  card.appendChild(
+    pciElement(
+      "div",
+      "pci-hint",
+      "As barras são independentes dos radares. Cada métrica possui sua própria lista de jogadores."
+    )
+  );
+
   const list = pciElement("div", "pci-list");
 
   data.barMetrics.forEach((metric) => {
+    const entries = Array.isArray(metric.entries) ? metric.entries : [];
+
     list.appendChild(
       pciBuildMetricListRow({
         metric,
         selected: state.selectedBarMetricId === metric.id,
-        summary: `${data.players.length} jogadores • máx. ${metric.maxValue}`,
+        summary: `${entries.length} jogadores • máx. ${metric.maxValue}`,
         onSelect: () => {
           state.selectedBarMetricId = metric.id;
+
+          if (!entries.some((entry) => entry.id === state.selectedBarEntryId)) {
+            state.selectedBarEntryId = entries[0]?.id ?? null;
+          }
+
           renderWorkspace();
           rerender(false);
         }
@@ -1261,7 +1696,7 @@ function pciBuildBarsCard({ win, data, state, rerender, renderWorkspace }) {
       pciElement(
         "div",
         "pci-empty",
-        "Clique em “+ Barra” e informe uma métrica. O gráfico cria uma barra por jogador, uma abaixo da outra."
+        "Clique em “+ Métrica”. Depois adicione apenas os jogadores que devem aparecer naquela comparação."
       )
     );
   }
@@ -1270,114 +1705,304 @@ function pciBuildBarsCard({ win, data, state, rerender, renderWorkspace }) {
 
   const selected = data.barMetrics.find((metric) => metric.id === state.selectedBarMetricId);
 
-  if (selected) {
-    const editor = pciElement("div", "pci-editor");
-    const editorHead = pciElement("div", "pci-editor-head");
-    editorHead.appendChild(pciElement("strong", "", "Editar comparação"));
-    editorHead.appendChild(pciElement("span", "", "Barras horizontais"));
-    editor.appendChild(editorHead);
+  if (!selected) {
+    return card;
+  }
 
-    editor.appendChild(
+  selected.entries ||= [];
+
+  const editor = pciElement("div", "pci-editor");
+  const editorHead = pciElement("div", "pci-editor-head");
+  editorHead.appendChild(pciElement("strong", "", "Configurar métrica"));
+  editorHead.appendChild(pciElement("span", "", "Barras horizontais"));
+  editor.appendChild(editorHead);
+
+  editor.appendChild(
+    pciField({
+      label: "Nome da métrica",
+      value: selected.label,
+      onInput: (value) => {
+        selected.label = value;
+        rerender(true);
+      }
+    })
+  );
+
+  const settings = pciElement("div", "pci-team-settings");
+  settings.appendChild(
+    pciField({
+      label: "Unidade",
+      value: selected.unit,
+      placeholder: "% / km / xG",
+      onInput: (value) => {
+        selected.unit = value;
+        rerender(false);
+      }
+    })
+  );
+  settings.appendChild(
+    pciField({
+      label: "Escala máxima",
+      value: selected.maxValue,
+      type: "number",
+      min: 0.0001,
+      step: 0.1,
+      onInput: (value) => {
+        selected.maxValue = Math.max(0.0001, pciNumber(value, 1));
+        rerender(false);
+      }
+    })
+  );
+  editor.appendChild(settings);
+
+  editor.appendChild(
+    pciField({
+      label: "Casas decimais",
+      value: selected.decimals,
+      type: "number",
+      min: 0,
+      max: 3,
+      step: 1,
+      onInput: (value) => {
+        selected.decimals = pciClamp(Math.round(pciNumber(value, 1)), 0, 3);
+        rerender(false);
+      }
+    })
+  );
+
+  const editorActions = pciElement("div", "pci-editor-actions");
+  editorActions.appendChild(
+    pciButton({
+      label: "Duplicar métrica",
+      className: "pci-button pci-button-ghost",
+      onClick: () => {
+        const clone = pciDuplicateBarMetric(data, selected.id);
+        state.selectedBarMetricId = clone?.id ?? selected.id;
+        state.selectedBarEntryId = clone?.entries?.[0]?.id ?? null;
+        rerender(true);
+      }
+    })
+  );
+  editorActions.appendChild(
+    pciButton({
+      label: "Excluir métrica",
+      className: "pci-button pci-button-ghost pci-button-danger",
+      onClick: () => {
+        data.barMetrics = data.barMetrics.filter((metric) => metric.id !== selected.id);
+        state.selectedBarMetricId = data.barMetrics[0]?.id ?? null;
+        state.selectedBarEntryId = data.barMetrics[0]?.entries?.[0]?.id ?? null;
+        rerender(true);
+      }
+    })
+  );
+  editor.appendChild(editorActions);
+  card.appendChild(editor);
+
+  const roster = pciElement("div", "pci-editor");
+  const rosterHead = pciElement("div", "pci-editor-head");
+  rosterHead.appendChild(pciElement("strong", "", "Jogadores desta métrica"));
+  rosterHead.appendChild(
+    pciElement("span", "", `${selected.entries.length} na comparação`)
+  );
+  roster.appendChild(rosterHead);
+
+  const addActions = pciElement("div", "pci-quick-actions");
+  addActions.appendChild(
+    pciButton({
+      label: `+ ${data.teams.A}`,
+      className: "pci-button pci-button-ghost",
+      onClick: () => {
+        const entry = pciAddBarEntry(data, selected, "A");
+        state.selectedBarEntryId = entry.id;
+        rerender(true);
+      }
+    })
+  );
+  addActions.appendChild(
+    pciButton({
+      label: `+ ${data.teams.B}`,
+      className: "pci-button pci-button-ghost",
+      onClick: () => {
+        const entry = pciAddBarEntry(data, selected, "B");
+        state.selectedBarEntryId = entry.id;
+        rerender(true);
+      }
+    })
+  );
+  roster.appendChild(addActions);
+
+  const valueList = pciElement("div", "pci-value-list");
+
+  selected.entries.forEach((entry) => {
+    state.openBarEntries ||= {};
+
+    const row = pciElement("details", "pci-entry-details");
+    const savedOpenState = state.openBarEntries[entry.id];
+
+    row.open =
+      typeof savedOpenState === "boolean"
+        ? savedOpenState
+        : entry.id === state.selectedBarEntryId;
+
+    const color =
+      typeof win.pcGetBarEntryColor === "function"
+        ? win.pcGetBarEntryColor(selected, entry.id)
+        : entry.team === "B"
+          ? "#071F3D"
+          : "#C58B12";
+
+    row.style.setProperty("--pci-color", color);
+
+    const summary = pciElement("summary");
+    const swatch = pciElement("span", "pci-swatch");
+    swatch.style.setProperty("--pci-color", color);
+
+    const copy = pciElement("span", "pci-row-copy");
+    copy.appendChild(pciElement("strong", "", entry.name));
+    copy.appendChild(
+      pciElement(
+        "span",
+        "",
+        entry.team === "A" ? data.teams.A : data.teams.B
+      )
+    );
+
+    summary.appendChild(swatch);
+    summary.appendChild(copy);
+    summary.appendChild(
+      pciElement(
+        "span",
+        "pci-row-value",
+        `${entry.value}${selected.unit ? ` ${selected.unit}` : ""}`
+      )
+    );
+    summary.appendChild(pciElement("span", "pci-details-plus", "+"));
+    row.appendChild(summary);
+
+    const body = pciElement("div", "pci-entry-details-body");
+
+    body.appendChild(
       pciField({
-        label: "Nome da métrica",
-        value: selected.label,
+        label: "Nome do jogador",
+        value: entry.name,
         onInput: (value) => {
-          selected.label = value;
+          entry.name = value;
           rerender(true);
         }
       })
     );
 
-    const settings = pciElement("div", "pci-team-settings");
-    settings.appendChild(
+    body.appendChild(
       pciField({
-        label: "Unidade",
-        value: selected.unit,
-        placeholder: "% / km / xG",
-        onInput: (value) => {
-          selected.unit = value;
-          rerender(false);
-        }
-      })
-    );
-    settings.appendChild(
-      pciField({
-        label: "Escala máxima",
-        value: selected.maxValue,
-        type: "number",
-        min: 0.0001,
-        step: 0.1,
-        onInput: (value) => {
-          selected.maxValue = Math.max(0.0001, pciNumber(value, 1));
-          rerender(false);
-        }
-      })
-    );
-    editor.appendChild(settings);
-
-    editor.appendChild(
-      pciField({
-        label: "Casas decimais",
-        value: selected.decimals,
+        label: "Valor",
+        value: entry.value,
         type: "number",
         min: 0,
-        max: 3,
-        step: 1,
+        step: selected.decimals === 0 ? 1 : 1 / 10 ** selected.decimals,
         onInput: (value) => {
-          selected.decimals = pciClamp(Math.round(pciNumber(value, 1)), 0, 3);
+          entry.value = Math.max(0, pciNumber(value, 0));
           rerender(false);
         }
       })
     );
 
-    const maxValue = Math.max(0.0001, pciNumber(selected.maxValue, 1));
-    const decimals = pciClamp(Math.round(pciNumber(selected.decimals, 1)), 0, 3);
-    const step = decimals === 0 ? 1 : 1 / 10 ** decimals;
+    const switcher = pciElement("div", "pci-team-switch");
 
-    editor.appendChild(
-      pciBuildPlayerValueRows({
-        win,
-        data,
-        metric: selected,
-        maxValue,
-        step,
-        decimals,
-        rerender
-      })
-    );
+    ["A", "B"].forEach((team) => {
+      const button = pciElement(
+        "button",
+        `pci-team-button ${entry.team === team ? "is-active" : ""}`,
+        team === "A" ? data.teams.A : data.teams.B
+      );
+      button.type = "button";
+      button.dataset.team = team;
+      button.addEventListener("click", () => {
+        entry.team = team;
+        rerender(true);
+      });
+      switcher.appendChild(button);
+    });
 
-    const editorActions = pciElement("div", "pci-editor-actions");
-    editorActions.appendChild(
+    body.appendChild(switcher);
+
+    const rowActions = pciElement("div", "pci-editor-actions");
+    rowActions.appendChild(
       pciButton({
         label: "Duplicar",
         className: "pci-button pci-button-ghost",
         onClick: () => {
-          const clone = pciDuplicateBarMetric(data, selected.id);
-          state.selectedBarMetricId = clone?.id ?? selected.id;
+          const clone = pciDuplicateBarEntry(selected, entry.id);
+          state.selectedBarEntryId = clone?.id ?? entry.id;
+          state.openBarEntries[clone?.id ?? entry.id] = true;
           rerender(true);
         }
       })
     );
-    editorActions.appendChild(
+    rowActions.appendChild(
       pciButton({
         label: "Excluir",
         className: "pci-button pci-button-ghost pci-button-danger",
         onClick: () => {
-          data.barMetrics = data.barMetrics.filter((metric) => metric.id !== selected.id);
-          state.selectedBarMetricId = data.barMetrics[0]?.id ?? null;
+          delete state.openBarEntries[entry.id];
+          pciRemoveBarEntry(selected, entry.id);
+          state.selectedBarEntryId = selected.entries[0]?.id ?? null;
           rerender(true);
         }
       })
     );
-    editor.appendChild(editorActions);
-    card.appendChild(editor);
+    body.appendChild(rowActions);
+    row.appendChild(body);
+
+    row.addEventListener("toggle", () => {
+      state.openBarEntries[entry.id] = row.open;
+
+      if (row.open) {
+        state.selectedBarEntryId = entry.id;
+      }
+    });
+
+    valueList.appendChild(row);
+  });
+
+  if (!selected.entries.length) {
+    valueList.appendChild(
+      pciElement(
+        "div",
+        "pci-empty",
+        "Esta métrica está vazia. Adicione jogadores do Time A ou do Time B acima."
+      )
+    );
   }
 
+  roster.appendChild(valueList);
+
+  const clearActions = pciElement("div", "pci-editor-actions");
+  clearActions.appendChild(
+    pciButton({
+      label: "Limpar jogadores",
+      className: "pci-button pci-button-ghost pci-button-danger",
+      disabled: !selected.entries.length,
+      onClick: () => {
+        selected.entries = [];
+        state.selectedBarEntryId = null;
+        rerender(true);
+      }
+    })
+  );
+  roster.appendChild(clearActions);
+
+  card.appendChild(roster);
   return card;
 }
 
-function pciBuildTextDetails({ data, rerender }) {
+function pciBuildTextDetails({ data, rerender, state }) {
   const details = pciDetails("Texto do card", "Conteúdo editorial");
+  state.openSections ||= {};
+  details.open = Boolean(state.openSections.text);
+  details.addEventListener("toggle", () => {
+    state.openSections.text = details.open;
+  });
+
   const body = pciElement("div", "pci-details-body");
 
   body.appendChild(
@@ -1455,51 +2080,6 @@ function pciBuildTextDetails({ data, rerender }) {
   return details;
 }
 
-function pciBuildSettingsDetails({ data, rerender, renderWorkspace }) {
-  const details = pciDetails("Configurações", "Escala do radar");
-  const body = pciElement("div", "pci-details-body");
-
-  body.appendChild(
-    pciField({
-      label: "Valor máximo do radar",
-      value: data.radarMaxValue,
-      type: "number",
-      min: 1,
-      step: 1,
-      onInput: (value) => {
-        const oldMax = Math.max(1, pciNumber(data.radarMaxValue, 100));
-        const nextMax = Math.max(1, pciNumber(value, oldMax));
-        const ratio = nextMax / oldMax;
-
-        data.radarMaxValue = nextMax;
-        data.radarMetrics.forEach((metric) => {
-          Object.keys(metric.values || {}).forEach((playerId) => {
-            metric.values[playerId] = pciClamp(
-              Math.round(pciNumber(metric.values[playerId], 0) * ratio),
-              0,
-              nextMax
-            );
-          });
-        });
-
-        rerender(false);
-        renderWorkspace();
-      }
-    })
-  );
-
-  body.appendChild(
-    pciElement(
-      "div",
-      "pci-hint",
-      "O radar usa a mesma escala para todos os jogadores. Para percentis, mantenha 100."
-    )
-  );
-
-  details.appendChild(body);
-  return details;
-}
-
 function pciApplySelectionStyle(frame, state) {
   const doc = frame.contentDocument;
 
@@ -1520,8 +2100,15 @@ function pciApplySelectionStyle(frame, state) {
     }
   });
 
+  doc.querySelectorAll(".pc-radar-card[data-radar-id]").forEach((card) => {
+    card.classList.toggle("is-selected", card.dataset.radarId === state.selectedRadarId);
+  });
+
   doc.querySelectorAll("[data-radar-metric-id].pc-radar-label").forEach((label) => {
-    const isSelected = label.dataset.radarMetricId === state.selectedRadarMetricId;
+    const isSelected =
+      label.dataset.radarId === state.selectedRadarId &&
+      label.dataset.radarMetricId === state.selectedRadarMetricId;
+
     label.setAttribute("fill", isSelected ? "#C58B12" : "#071F3D");
   });
 
@@ -1550,9 +2137,17 @@ function pciUpdateRadarDrag({ frame, data, state, event, rerender }) {
   }
 
   const doc = frame.contentDocument;
-  const svg = doc?.getElementById("playerRadarSvg");
+  const svg = Array.from(doc?.querySelectorAll("svg.pc-radar[data-radar-id]") || []).find(
+    (item) => item.dataset.radarId === state.drag.radarId
+  );
 
   if (!svg) {
+    return;
+  }
+
+  const radar = pciGetRadar(data, state.drag.radarId);
+
+  if (!radar) {
     return;
   }
 
@@ -1562,11 +2157,11 @@ function pciUpdateRadarDrag({ frame, data, state, event, rerender }) {
     return;
   }
 
-  const metricIndex = data.radarMetrics.findIndex(
+  const metricIndex = radar.metrics.findIndex(
     (metric) => metric.id === state.drag.metricId
   );
 
-  if (metricIndex < 0 || !data.radarMetrics.length) {
+  if (metricIndex < 0 || !radar.metrics.length) {
     return;
   }
 
@@ -1576,15 +2171,15 @@ function pciUpdateRadarDrag({ frame, data, state, event, rerender }) {
     radius: 240
   };
 
-  const angle = (-90 + (360 / data.radarMetrics.length) * metricIndex) * (Math.PI / 180);
+  const angle = (-90 + (360 / radar.metrics.length) * metricIndex) * (Math.PI / 180);
   const unitX = Math.cos(angle);
   const unitY = Math.sin(angle);
   const vectorX = point.x - geometry.cx;
   const vectorY = point.y - geometry.cy;
   const projection = vectorX * unitX + vectorY * unitY;
   const ratio = pciClamp(projection / geometry.radius, 0, 1);
-  const value = Math.round(ratio * data.radarMaxValue);
-  const metric = data.radarMetrics[metricIndex];
+  const value = Math.round(ratio * radar.maxValue);
+  const metric = radar.metrics[metricIndex];
 
   metric.values[state.drag.playerId] = value;
   rerender(false);
@@ -1600,19 +2195,52 @@ function pciAttachFrameEvents({ frame, data, state, rerender, renderWorkspace })
   state.boundDocument = doc;
 
   doc.addEventListener("click", (event) => {
-    const playerTarget = event.target.closest?.("[data-player-id]");
+    const radarNode = event.target.closest?.(
+      ".pc-radar-node[data-radar-id][data-player-id][data-radar-metric-id]"
+    );
 
-    if (playerTarget?.dataset.playerId && !state.drag) {
-      state.selectedPlayerId = playerTarget.dataset.playerId;
+    if (radarNode && !state.drag) {
+      state.openSections.radars = true;
+      state.selectedPlayerId = radarNode.dataset.playerId;
+      state.selectedRadarId = radarNode.dataset.radarId;
+      state.selectedRadarMetricId = radarNode.dataset.radarMetricId;
       renderWorkspace();
       pciApplySelectionStyle(frame, state);
       return;
     }
 
-    const metricTarget = event.target.closest?.("[data-radar-metric-id]");
+    const metricTarget = event.target.closest?.("[data-radar-id][data-radar-metric-id]");
 
     if (metricTarget?.dataset.radarMetricId && !state.drag) {
+      state.openSections.radars = true;
+      state.selectedRadarId = metricTarget.dataset.radarId;
       state.selectedRadarMetricId = metricTarget.dataset.radarMetricId;
+      renderWorkspace();
+      pciApplySelectionStyle(frame, state);
+      return;
+    }
+
+    const radarTarget = event.target.closest?.(".pc-radar-card[data-radar-id]");
+
+    if (radarTarget?.dataset.radarId && !state.drag) {
+      state.openSections.radars = true;
+      const radar = pciGetRadar(data, radarTarget.dataset.radarId);
+      state.selectedRadarId = radarTarget.dataset.radarId;
+
+      if (!radar?.metrics.some((metric) => metric.id === state.selectedRadarMetricId)) {
+        state.selectedRadarMetricId = radar?.metrics[0]?.id ?? null;
+      }
+
+      renderWorkspace();
+      pciApplySelectionStyle(frame, state);
+      return;
+    }
+
+    const playerTarget = event.target.closest?.("[data-player-id]");
+
+    if (playerTarget?.dataset.playerId && !state.drag) {
+      state.openSections.players = true;
+      state.selectedPlayerId = playerTarget.dataset.playerId;
       renderWorkspace();
       pciApplySelectionStyle(frame, state);
       return;
@@ -1621,6 +2249,7 @@ function pciAttachFrameEvents({ frame, data, state, rerender, renderWorkspace })
     const barTarget = event.target.closest?.("[data-bar-metric-id]");
 
     if (barTarget?.dataset.barMetricId) {
+      state.openSections.bars = true;
       state.selectedBarMetricId = barTarget.dataset.barMetricId;
       renderWorkspace();
       pciApplySelectionStyle(frame, state);
@@ -1628,16 +2257,21 @@ function pciAttachFrameEvents({ frame, data, state, rerender, renderWorkspace })
   });
 
   doc.addEventListener("pointerdown", (event) => {
-    const node = event.target.closest?.(".pc-radar-node[data-player-id][data-radar-metric-id]");
+    const node = event.target.closest?.(
+      ".pc-radar-node[data-radar-id][data-player-id][data-radar-metric-id]"
+    );
 
     if (!node) {
       return;
     }
 
     event.preventDefault();
+    state.openSections.radars = true;
     state.selectedPlayerId = node.dataset.playerId;
+    state.selectedRadarId = node.dataset.radarId;
     state.selectedRadarMetricId = node.dataset.radarMetricId;
     state.drag = {
+      radarId: node.dataset.radarId,
       playerId: node.dataset.playerId,
       metricId: node.dataset.radarMetricId
     };
@@ -1701,12 +2335,26 @@ function buildAdvancedPlayerComparisonInspector({
     state.selectedPlayerId = data.players[0]?.id ?? null;
   }
 
-  if (!data.radarMetrics.some((metric) => metric.id === state.selectedRadarMetricId)) {
-    state.selectedRadarMetricId = data.radarMetrics[0]?.id ?? null;
+  if (!data.radars.some((radar) => radar.id === state.selectedRadarId)) {
+    state.selectedRadarId = data.radars[0]?.id ?? null;
+  }
+
+  const activeRadar = pciGetRadar(data, state.selectedRadarId);
+
+  if (!activeRadar?.metrics.some((metric) => metric.id === state.selectedRadarMetricId)) {
+    state.selectedRadarMetricId = activeRadar?.metrics[0]?.id ?? null;
   }
 
   if (!data.barMetrics.some((metric) => metric.id === state.selectedBarMetricId)) {
     state.selectedBarMetricId = data.barMetrics[0]?.id ?? null;
+  }
+
+  const activeBarMetric = data.barMetrics.find(
+    (metric) => metric.id === state.selectedBarMetricId
+  );
+
+  if (!activeBarMetric?.entries?.some((entry) => entry.id === state.selectedBarEntryId)) {
+    state.selectedBarEntryId = activeBarMetric?.entries?.[0]?.id ?? null;
   }
 
   const workspace = pciElement("div", "pci-shell");
@@ -1719,32 +2367,88 @@ function buildAdvancedPlayerComparisonInspector({
       pciApplySelectionStyle(frame, state);
     });
 
-    if (refreshWorkspace) {
-      renderWorkspace();
+    if (!refreshWorkspace) {
+      return;
     }
+
+    const activeElement = document.activeElement;
+    const isTyping =
+      activeElement &&
+      workspace.contains(activeElement) &&
+      (activeElement.tagName === "INPUT" || activeElement.tagName === "TEXTAREA");
+
+    if (isTyping) {
+      state.pendingWorkspaceRefresh = true;
+
+      if (activeElement.dataset.pciRefreshOnBlur !== "true") {
+        activeElement.dataset.pciRefreshOnBlur = "true";
+
+        activeElement.addEventListener(
+          "blur",
+          () => {
+            window.setTimeout(() => {
+              if (!state.pendingWorkspaceRefresh) {
+                return;
+              }
+
+              const nextActiveElement = document.activeElement;
+              const focusStayedInWorkspace =
+                nextActiveElement && workspace.contains(nextActiveElement);
+
+              if (focusStayedInWorkspace) {
+                return;
+              }
+
+              state.pendingWorkspaceRefresh = false;
+              renderWorkspace();
+            }, 120);
+          },
+          { once: true }
+        );
+      }
+
+      return;
+    }
+
+    state.pendingWorkspaceRefresh = false;
+    renderWorkspace();
   };
 
   const renderWorkspace = () => {
     workspace.innerHTML = "";
 
     workspace.appendChild(
-      pciBuildHero({ data, state, rerender, renderWorkspace })
+      pciBuildHero({ data, state, rerender })
     );
 
     workspace.appendChild(
-      pciBuildPlayersCard({ win, data, state, rerender, renderWorkspace })
+      pciWrapCardInCollapse({
+        card: pciBuildPlayersCard({ win, data, state, rerender, renderWorkspace }),
+        state,
+        sectionKey: "players",
+        defaultOpen: false
+      })
     );
 
     workspace.appendChild(
-      pciBuildRadarCard({ win, data, state, rerender, renderWorkspace })
+      pciWrapCardInCollapse({
+        card: pciBuildRadarCard({ win, data, state, rerender, renderWorkspace }),
+        state,
+        sectionKey: "radars",
+        defaultOpen: true
+      })
     );
 
     workspace.appendChild(
-      pciBuildBarsCard({ win, data, state, rerender, renderWorkspace })
+      pciWrapCardInCollapse({
+        card: pciBuildBarsCard({ win, data, state, rerender, renderWorkspace }),
+        state,
+        sectionKey: "bars",
+        defaultOpen: false
+      })
     );
 
-    workspace.appendChild(pciBuildTextDetails({ data, rerender }));
-    workspace.appendChild(pciBuildSettingsDetails({ data, rerender, renderWorkspace }));
+    workspace.appendChild(pciBuildTextDetails({ data, rerender, state }));
 
     requestAnimationFrame(() => {
       pciApplySelectionStyle(frame, state);

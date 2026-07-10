@@ -1,6 +1,6 @@
 /* ==========================================================
    ADQL UI
-   C-05 — PLAYER COMPARISON
+   C-05 — PLAYER COMPARISON / MÚLTIPLOS RADARES
 ========================================================== */
 
 const PC_SVG_NS = "http://www.w3.org/2000/svg";
@@ -53,6 +53,30 @@ function pcUid(prefix) {
   return `${prefix}-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 7)}`;
 }
 
+function pcMigrateLegacyRadarData(data) {
+  if (Array.isArray(data.radars)) {
+    return;
+  }
+
+  const legacyMetrics = pcSafeArray(data.radarMetrics);
+  const legacyMax = Math.max(1, pcNumber(data.radarMaxValue, 100));
+
+  data.radars = legacyMetrics.length
+    ? [
+        {
+          id: pcUid("radar"),
+          title: "Radar 1",
+          subtitle: "Perfil multidimensional",
+          maxValue: legacyMax,
+          metrics: legacyMetrics
+        }
+      ]
+    : [];
+
+  delete data.radarMetrics;
+  delete data.radarMaxValue;
+}
+
 function pcNormalizeData(data) {
   data.kicker ??= "Player comparison";
   data.title ??= "Comparação de jogadores";
@@ -61,10 +85,11 @@ function pcNormalizeData(data) {
   data.teams ??= { A: "Time A", B: "Time B" };
   data.teams.A ??= "Time A";
   data.teams.B ??= "Time B";
-  data.radarMaxValue = Math.max(1, pcNumber(data.radarMaxValue, 100));
   data.players = pcSafeArray(data.players);
-  data.radarMetrics = pcSafeArray(data.radarMetrics);
   data.barMetrics = pcSafeArray(data.barMetrics);
+
+  pcMigrateLegacyRadarData(data);
+  data.radars = pcSafeArray(data.radars);
 
   data.players.forEach((player, index) => {
     player.id ||= pcUid(`player-${index + 1}`);
@@ -72,17 +97,25 @@ function pcNormalizeData(data) {
     player.name ||= `Jogador ${index + 1}`;
   });
 
-  data.radarMetrics.forEach((metric, index) => {
-    metric.id ||= pcUid(`radar-${index + 1}`);
-    metric.label ||= `Métrica ${index + 1}`;
-    metric.values ||= {};
+  data.radars.forEach((radar, radarIndex) => {
+    radar.id ||= pcUid(`radar-${radarIndex + 1}`);
+    radar.title ||= `Radar ${radarIndex + 1}`;
+    radar.subtitle ??= "";
+    radar.maxValue = Math.max(1, pcNumber(radar.maxValue, 100));
+    radar.metrics = pcSafeArray(radar.metrics);
 
-    data.players.forEach((player) => {
-      metric.values[player.id] = pcClamp(
-        pcNumber(metric.values[player.id], 0),
-        0,
-        data.radarMaxValue
-      );
+    radar.metrics.forEach((metric, metricIndex) => {
+      metric.id ||= pcUid(`radar-metric-${metricIndex + 1}`);
+      metric.label ||= `Métrica ${metricIndex + 1}`;
+      metric.values ||= {};
+
+      data.players.forEach((player) => {
+        metric.values[player.id] = pcClamp(
+          pcNumber(metric.values[player.id], 0),
+          0,
+          radar.maxValue
+        );
+      });
     });
   });
 
@@ -91,23 +124,43 @@ function pcNormalizeData(data) {
     metric.label ||= `Métrica ${index + 1}`;
     metric.unit ??= "";
     metric.decimals = pcClamp(Math.round(pcNumber(metric.decimals, 1)), 0, 3);
-    metric.values ||= {};
 
-    data.players.forEach((player) => {
-      metric.values[player.id] = Math.max(
-        0,
-        pcNumber(metric.values[player.id], 0)
-      );
+    if (!Array.isArray(metric.entries)) {
+      const legacyValues =
+        metric.values && typeof metric.values === "object"
+          ? metric.values
+          : {};
+
+      metric.entries = data.players
+        .filter((player) =>
+          Object.prototype.hasOwnProperty.call(legacyValues, player.id)
+        )
+        .map((player) => ({
+          id: pcUid("bar-player"),
+          team: player.team,
+          name: player.name,
+          value: Math.max(0, pcNumber(legacyValues[player.id], 0))
+        }));
+    }
+
+    metric.entries = pcSafeArray(metric.entries);
+
+    metric.entries.forEach((entry, entryIndex) => {
+      entry.id ||= pcUid(`bar-player-${entryIndex + 1}`);
+      entry.team = entry.team === "B" ? "B" : "A";
+      entry.name ||= `Jogador ${entryIndex + 1}`;
+      entry.value = Math.max(0, pcNumber(entry.value, 0));
     });
+
+    delete metric.values;
 
     const biggestValue = Math.max(
       0,
-      ...Object.values(metric.values).map((value) => pcNumber(value, 0))
+      ...metric.entries.map((entry) => pcNumber(entry.value, 0))
     );
 
     metric.maxValue = Math.max(
       pcNumber(metric.maxValue, biggestValue || 1),
-      biggestValue,
       0.0001
     );
   });
@@ -138,6 +191,25 @@ function pcGetPlayerColor(data, playerId) {
   const palette = PC_TEAM_PALETTES[player.team] || PC_TEAM_PALETTES.A;
   return palette[index % palette.length];
 }
+
+function pcGetBarEntryColor(metric, entryId) {
+  const entries = pcSafeArray(metric?.entries);
+  const entry = entries.find((item) => item.id === entryId);
+
+  if (!entry) {
+    return PC_TEAM_PALETTES.A[0];
+  }
+
+  const teamEntries = entries.filter((item) => item.team === entry.team);
+  const index = Math.max(
+    0,
+    teamEntries.findIndex((item) => item.id === entry.id)
+  );
+
+  const palette = PC_TEAM_PALETTES[entry.team] || PC_TEAM_PALETTES.A;
+  return palette[index % palette.length];
+}
+
 
 function pcPolarPoint(cx, cy, radius, angleDeg) {
   const angle = (Math.PI / 180) * angleDeg;
@@ -201,12 +273,14 @@ function pcDrawEmptyRadar(svg, message) {
   svg.appendChild(text);
 }
 
-function pcDrawRadar(svg, data) {
-  const metrics = data.radarMetrics;
+function pcDrawRadar(svg, data, radar) {
+  const metrics = pcSafeArray(radar.metrics);
   const players = data.players;
 
+  svg.dataset.radarId = radar.id;
+
   if (!metrics.length) {
-    pcDrawEmptyRadar(svg, "Adicione métricas ao radar");
+    pcDrawEmptyRadar(svg, "Adicione métricas a este radar");
     return;
   }
 
@@ -217,7 +291,7 @@ function pcDrawRadar(svg, data) {
 
   const { cx, cy, radius, labelRadius, levels } = PC_RADAR_GEOMETRY;
   const total = metrics.length;
-  const maxValue = Math.max(1, pcNumber(data.radarMaxValue, 100));
+  const maxValue = Math.max(1, pcNumber(radar.maxValue, 100));
 
   svg.innerHTML = "";
 
@@ -269,6 +343,7 @@ function pcDrawRadar(svg, data) {
       class: "pc-radar-label",
       "text-anchor": pcRadarLabelAnchor(labelPoint),
       "dominant-baseline": "middle",
+      "data-radar-id": radar.id,
       "data-radar-metric-id": metric.id
     });
 
@@ -292,6 +367,7 @@ function pcDrawRadar(svg, data) {
         stroke: color,
         "stroke-width": 3.5,
         "stroke-linejoin": "round",
+        "data-radar-id": radar.id,
         "data-radar-player-id": player.id
       })
     );
@@ -321,6 +397,7 @@ function pcDrawRadar(svg, data) {
         stroke: "#FFFDF8",
         "stroke-width": 3.4,
         class: "pc-radar-node",
+        "data-radar-id": radar.id,
         "data-player-id": player.id,
         "data-radar-metric-id": metric.id,
         "aria-label": `${player.name}: ${metric.label} ${value}`
@@ -338,6 +415,75 @@ function pcDrawRadar(svg, data) {
       fill: "#071F3D"
     })
   );
+}
+
+function pcCreateRadarCard(data, radar, index) {
+  const card = document.createElement("article");
+  card.className = "pc-radar-card";
+  card.dataset.radarId = radar.id;
+
+  const head = document.createElement("div");
+  head.className = "pc-radar-card-head";
+
+  const copy = document.createElement("div");
+  copy.className = "pc-radar-card-copy";
+
+  const kicker = document.createElement("span");
+  kicker.className = "pc-radar-card-kicker";
+  kicker.textContent = `Radar ${String(index + 1).padStart(2, "0")}`;
+
+  const title = document.createElement("h3");
+  title.className = "pc-radar-card-title";
+  title.textContent = radar.title;
+
+  const subtitle = document.createElement("p");
+  subtitle.className = "pc-radar-card-subtitle";
+  subtitle.textContent = radar.subtitle || "Perfil multidimensional";
+
+  copy.appendChild(kicker);
+  copy.appendChild(title);
+  copy.appendChild(subtitle);
+
+  const meta = document.createElement("span");
+  meta.className = "pc-radar-card-meta";
+  meta.textContent = `${radar.metrics.length} métricas • máx. ${radar.maxValue}`;
+
+  head.appendChild(copy);
+  head.appendChild(meta);
+  card.appendChild(head);
+
+  const svg = document.createElementNS(PC_SVG_NS, "svg");
+  svg.classList.add("pc-radar");
+  svg.setAttribute("viewBox", "0 0 900 660");
+  svg.setAttribute("aria-label", `Radar comparativo: ${radar.title}`);
+  svg.dataset.radarId = radar.id;
+
+  pcDrawRadar(svg, data, radar);
+  card.appendChild(svg);
+
+  return card;
+}
+
+function pcRenderRadars(data) {
+  const target = document.getElementById("playerRadarCharts");
+
+  if (!target) {
+    return;
+  }
+
+  target.innerHTML = "";
+
+  if (!data.radars.length) {
+    const empty = document.createElement("div");
+    empty.className = "pc-radar-empty";
+    empty.textContent = "Crie um radar no editor para começar a comparação multidimensional.";
+    target.appendChild(empty);
+    return;
+  }
+
+  data.radars.forEach((radar, index) => {
+    target.appendChild(pcCreateRadarCard(data, radar, index));
+  });
 }
 
 function pcCreatePlayerChip(data, player) {
@@ -415,19 +561,21 @@ function pcCreateBarCard(data, metric) {
   const rows = document.createElement("div");
   rows.className = "pc-bar-rows";
 
-  data.players.forEach((player) => {
-    const value = Math.max(0, pcNumber(metric.values?.[player.id], 0));
+  const entries = pcSafeArray(metric.entries);
+
+  entries.forEach((entry) => {
+    const value = Math.max(0, pcNumber(entry.value, 0));
     const maxValue = Math.max(0.0001, pcNumber(metric.maxValue, 1));
     const percent = pcClamp((value / maxValue) * 100, 0, 100);
-    const color = pcGetPlayerColor(data, player.id);
+    const color = pcGetBarEntryColor(metric, entry.id);
 
     const row = document.createElement("div");
     row.className = "pc-bar-row";
-    row.dataset.playerId = player.id;
+    row.dataset.barEntryId = entry.id;
 
     const playerName = document.createElement("span");
     playerName.className = "pc-bar-player";
-    playerName.textContent = player.name;
+    playerName.textContent = entry.name;
 
     const track = document.createElement("div");
     track.className = "pc-bar-track";
@@ -448,10 +596,10 @@ function pcCreateBarCard(data, metric) {
     rows.appendChild(row);
   });
 
-  if (!data.players.length) {
+  if (!entries.length) {
     const empty = document.createElement("div");
     empty.className = "pc-empty";
-    empty.textContent = "Adicione jogadores para gerar as barras.";
+    empty.textContent = "Adicione jogadores a esta métrica no editor.";
     rows.appendChild(empty);
   }
 
@@ -500,13 +648,7 @@ function renderPlayerComparison(data = window.playerComparisonData) {
   pcSetText("pcSourceText", data.source);
 
   pcRenderPlayers(data);
-
-  const svg = document.getElementById("playerRadarSvg");
-
-  if (svg) {
-    pcDrawRadar(svg, data);
-  }
-
+  pcRenderRadars(data);
   pcRenderBars(data);
 
   window.dispatchEvent(
@@ -520,6 +662,7 @@ window.playerComparisonData = playerComparisonData;
 window.renderPlayerComparison = renderPlayerComparison;
 window.pcNormalizeData = pcNormalizeData;
 window.pcGetPlayerColor = pcGetPlayerColor;
+window.pcGetBarEntryColor = pcGetBarEntryColor;
 window.pcRadarGeometry = PC_RADAR_GEOMETRY;
 
 renderPlayerComparison(playerComparisonData);
