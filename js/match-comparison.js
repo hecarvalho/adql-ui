@@ -1,5 +1,35 @@
+/* ==========================================================
+   ADQL UI
+   C-01 — MATCH COMPARISON
+   Auditoria funcional v1
+========================================================== */
+
+function parseComparisonNumber(value) {
+  const normalized = String(value ?? "")
+    .trim()
+    .replace(",", ".");
+
+  if (normalized === "") {
+    return null;
+  }
+
+  const number = Number(normalized);
+
+  return Number.isFinite(number)
+    ? number
+    : null;
+}
+
+function clampComparisonValue(value, min, max) {
+  return Math.min(Math.max(value, min), max);
+}
+
 function formatComparisonValue(value, type) {
-  const number = Number(value);
+  const number = parseComparisonNumber(value);
+
+  if (number === null) {
+    return "—";
+  }
 
   if (type === "percent") {
     return `${Math.round(number)}%`;
@@ -12,11 +42,33 @@ function formatComparisonValue(value, type) {
   return String(Math.round(number));
 }
 
-function formatComparisonDiff(home, away, type, homeName, awayName) {
-  const homeNumber = Number(home);
-  const awayNumber = Number(away);
+function formatComparisonDiff(
+  home,
+  away,
+  type,
+  homeName,
+  awayName
+) {
+  const homeNumber = parseComparisonNumber(home);
+  const awayNumber = parseComparisonNumber(away);
+
+  if (
+    homeNumber === null ||
+    awayNumber === null
+  ) {
+    return "SEM DADO";
+  }
+
   const diff = homeNumber - awayNumber;
-  const winner = diff >= 0 ? homeName : awayName;
+
+  if (Math.abs(diff) < Number.EPSILON) {
+    return "EMPATE";
+  }
+
+  const leader = diff > 0
+    ? homeName
+    : awayName;
+
   const abs = Math.abs(diff);
 
   let value;
@@ -29,62 +81,112 @@ function formatComparisonDiff(home, away, type, homeName, awayName) {
     value = Math.round(abs);
   }
 
-  return `+${value} ${winner}`;
+  return `+${value} ${leader}`;
 }
 
 function getHomeShare(home, away) {
-  const homeNumber = Number(home);
-  const awayNumber = Number(away);
-  const total = homeNumber + awayNumber;
+  const homeNumber = parseComparisonNumber(home);
+  const awayNumber = parseComparisonNumber(away);
 
-  if (!Number.isFinite(total) || total <= 0) {
+  if (
+    homeNumber === null ||
+    awayNumber === null
+  ) {
     return 50;
   }
 
-  return (homeNumber / total) * 100;
+  const safeHome = Math.max(0, homeNumber);
+  const safeAway = Math.max(0, awayNumber);
+  const total = safeHome + safeAway;
+
+  if (total <= 0) {
+    return 50;
+  }
+
+  return clampComparisonValue(
+    (safeHome / total) * 100,
+    0,
+    100
+  );
 }
 
 function createMetricRow(metric, data) {
   const article = document.createElement("article");
   article.className = "mc-metric";
-  article.dataset.metricId = metric.id;
 
-  const homeShare = getHomeShare(metric.home, metric.away);
+  if (metric?.id) {
+    article.dataset.metricId = metric.id;
+  }
 
-  article.innerHTML = `
-    <div class="mc-metric-label">${metric.label}</div>
+  const label = document.createElement("div");
+  label.className = "mc-metric-label";
+  label.textContent = metric?.label ?? "Métrica";
 
-    <div class="mc-metric-content">
-      <strong class="mc-home-value" data-metric="${metric.id}" data-side="home">
-        ${formatComparisonValue(metric.home, metric.type)}
-      </strong>
+  const content = document.createElement("div");
+  content.className = "mc-metric-content";
 
-      <div class="mc-bar">
-        <span class="mc-bar-fill" style="width:${homeShare}%"></span>
-        <i style="left:${homeShare}%"></i>
-        <em>
-          ${formatComparisonDiff(
-            metric.home,
-            metric.away,
-            metric.type,
-            data.home.name,
-            data.away.name
-          )}
-        </em>
-      </div>
+  const homeValue = document.createElement("strong");
+  homeValue.className = "mc-home-value";
+  homeValue.dataset.metric = metric?.id ?? "";
+  homeValue.dataset.side = "home";
+  homeValue.textContent = formatComparisonValue(
+    metric?.home,
+    metric?.type
+  );
 
-      <strong class="mc-away-value" data-metric="${metric.id}" data-side="away">
-        ${formatComparisonValue(metric.away, metric.type)}
-      </strong>
-    </div>
-  `;
+  const bar = document.createElement("div");
+  bar.className = "mc-bar";
+
+  const homeShare = getHomeShare(
+    metric?.home,
+    metric?.away
+  );
+
+  const fill = document.createElement("span");
+  fill.className = "mc-bar-fill";
+  fill.style.width = `${homeShare}%`;
+
+  const node = document.createElement("i");
+  node.style.left = `${homeShare}%`;
+
+  const diff = document.createElement("em");
+  diff.textContent = formatComparisonDiff(
+    metric?.home,
+    metric?.away,
+    metric?.type,
+    data?.home?.name ?? "Time A",
+    data?.away?.name ?? "Time B"
+  );
+
+  bar.appendChild(fill);
+  bar.appendChild(node);
+  bar.appendChild(diff);
+
+  const awayValue = document.createElement("strong");
+  awayValue.className = "mc-away-value";
+  awayValue.dataset.metric = metric?.id ?? "";
+  awayValue.dataset.side = "away";
+  awayValue.textContent = formatComparisonValue(
+    metric?.away,
+    metric?.type
+  );
+
+  content.appendChild(homeValue);
+  content.appendChild(bar);
+  content.appendChild(awayValue);
+
+  article.appendChild(label);
+  article.appendChild(content);
 
   return article;
 }
 
 function renderComparison(data) {
-  if (!data) return;
+  if (!data) {
+    return;
+  }
 
+  const kicker = document.querySelector(".mc-kicker");
   const homeTitle = document.getElementById("homeTitle");
   const awayTitle = document.getElementById("awayTitle");
   const matchSubtitle = document.getElementById("matchSubtitle");
@@ -94,18 +196,46 @@ function renderComparison(data) {
   const versionText = document.getElementById("comparisonVersion");
   const metricsContainer = document.getElementById("comparisonMetrics");
 
-  if (homeTitle) homeTitle.textContent = data.home.name;
-  if (awayTitle) awayTitle.textContent = data.away.name;
-  if (matchSubtitle) matchSubtitle.textContent = data.subtitle;
-  if (homeTeamLabel) homeTeamLabel.textContent = data.home.name;
-  if (awayTeamLabel) awayTeamLabel.textContent = data.away.name;
-  if (sourceText) sourceText.textContent = data.source;
-  if (versionText) versionText.textContent = data.version;
+  if (kicker) {
+    kicker.textContent = data.title ?? "Comparativo estatístico";
+  }
+
+  if (homeTitle) {
+    homeTitle.textContent = data.home?.name ?? "Time A";
+  }
+
+  if (awayTitle) {
+    awayTitle.textContent = data.away?.name ?? "Time B";
+  }
+
+  if (matchSubtitle) {
+    matchSubtitle.textContent = data.subtitle ?? "";
+  }
+
+  if (homeTeamLabel) {
+    homeTeamLabel.textContent = data.home?.name ?? "Time A";
+  }
+
+  if (awayTeamLabel) {
+    awayTeamLabel.textContent = data.away?.name ?? "Time B";
+  }
+
+  if (sourceText) {
+    sourceText.textContent = data.source ?? "";
+  }
+
+  if (versionText) {
+    versionText.textContent = data.version ?? "";
+  }
 
   if (metricsContainer) {
     metricsContainer.innerHTML = "";
 
-    data.metrics.forEach((metric) => {
+    const metrics = Array.isArray(data.metrics)
+      ? data.metrics
+      : [];
+
+    metrics.forEach((metric) => {
       metricsContainer.appendChild(
         createMetricRow(metric, data)
       );

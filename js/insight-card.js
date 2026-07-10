@@ -1,6 +1,7 @@
 /* ==========================================================
    ADQL UI
    C-02 — INSIGHT CARD
+   Auditoria funcional v1
 ========================================================== */
 
 const insight = {
@@ -46,8 +47,6 @@ const insight = {
 };
 
 const INSIGHT_VISUAL_SCALE = {
-  maxShots: 26,
-  maxXgPerShot: 0.31,
   minVisiblePercent: 8,
   maxVisiblePercent: 94
 };
@@ -61,7 +60,7 @@ function setTextById(id, value) {
     document.getElementById(id);
 
   if (target) {
-    target.textContent = value;
+    target.textContent = value ?? "";
   }
 }
 
@@ -73,7 +72,7 @@ function setTextBySelector(
     document.querySelector(selector);
 
   if (target) {
-    target.textContent = value;
+    target.textContent = value ?? "";
   }
 }
 
@@ -87,11 +86,20 @@ function parseInsightNumber(value) {
     .replace(/\s/g, "")
     .replace(",", ".");
 
+  if (normalized === "") {
+    return null;
+  }
+
   const parsed = Number(normalized);
 
-  return Number.isFinite(parsed)
-    ? parsed
-    : 0;
+  if (
+    !Number.isFinite(parsed) ||
+    parsed < 0
+  ) {
+    return null;
+  }
+
+  return parsed;
 }
 
 function clampInsightValue(
@@ -105,19 +113,29 @@ function clampInsightValue(
   );
 }
 
-function toVisualPercent(
-  value,
-  referenceMax
+function toRelativePercent(
+  primaryValue,
+  comparisonValue
 ) {
   if (
-    !Number.isFinite(value) ||
-    value <= 0
+    primaryValue === null ||
+    comparisonValue === null
+  ) {
+    return 0;
+  }
+
+  const total =
+    primaryValue + comparisonValue;
+
+  if (
+    total <= 0 ||
+    primaryValue <= 0
   ) {
     return 0;
   }
 
   const rawPercent =
-    (value / referenceMax) * 100;
+    (primaryValue / total) * 100;
 
   return clampInsightValue(
     rawPercent,
@@ -126,6 +144,21 @@ function toVisualPercent(
     INSIGHT_VISUAL_SCALE
       .maxVisiblePercent
   );
+}
+
+function calculateXgPerShot(
+  xg,
+  shots
+) {
+  if (
+    xg === null ||
+    shots === null ||
+    shots <= 0
+  ) {
+    return null;
+  }
+
+  return xg / shots;
 }
 
 /* ==========================================================
@@ -244,6 +277,13 @@ function updateInsightVisuals() {
         ?.textContent
     );
 
+  const homeXg =
+    parseInsightNumber(
+      document
+        .getElementById("homeXg")
+        ?.textContent
+    );
+
   const awayShots =
     parseInsightNumber(
       document
@@ -258,22 +298,28 @@ function updateInsightVisuals() {
         ?.textContent
     );
 
+  const homeXgPerShot =
+    calculateXgPerShot(
+      homeXg,
+      homeShots
+    );
+
   const awayXgPerShot =
-    awayShots > 0
-      ? awayXg / awayShots
-      : 0;
+    calculateXgPerShot(
+      awayXg,
+      awayShots
+    );
 
   const homeVolumePercent =
-    toVisualPercent(
+    toRelativePercent(
       homeShots,
-      INSIGHT_VISUAL_SCALE.maxShots
+      awayShots
     );
 
   const awayEfficiencyPercent =
-    toVisualPercent(
+    toRelativePercent(
       awayXgPerShot,
-      INSIGHT_VISUAL_SCALE
-        .maxXgPerShot
+      homeXgPerShot
     );
 
   updateHomeProfileLine(
@@ -292,6 +338,13 @@ function updateInsightVisuals() {
 function renderInsight(
   data = insight
 ) {
+  if (!data) {
+    return;
+  }
+
+  const home = data.home ?? {};
+  const away = data.away ?? {};
+
   setTextById(
     "insightCategory",
     data.category
@@ -329,42 +382,42 @@ function renderInsight(
 
   setTextById(
     "homeTeam",
-    data.home.team
+    home.team
   );
 
   setTextById(
     "homeShots",
-    data.home.shots
+    home.shots
   );
 
   setTextById(
     "homeXg",
-    data.home.xg
+    home.xg
   );
 
   setTextBySelector(
     ".ic-team-block:not(.ic-team-block-away) .ic-team-reading",
-    data.home.reading
+    home.reading
   );
 
   setTextById(
     "awayTeam",
-    data.away.team
+    away.team
   );
 
   setTextById(
     "awayShots",
-    data.away.shots
+    away.shots
   );
 
   setTextById(
     "awayXg",
-    data.away.xg
+    away.xg
   );
 
   setTextBySelector(
     ".ic-team-block-away .ic-team-reading",
-    data.away.reading
+    away.reading
   );
 
   setTextById(

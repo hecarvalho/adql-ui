@@ -13,36 +13,42 @@ const editorSchemas = {
         key: "insightCategory",
         label: "Categoria",
         selector: "#insightCategory",
+        dataPath: "category",
         type: "input"
       },
       {
         key: "mainValue",
         label: "Valor principal",
         selector: "#mainValue",
+        dataPath: "mainValue",
         type: "input"
       },
       {
         key: "mainUnit",
         label: "Unidade",
         selector: "#mainUnit",
+        dataPath: "mainUnit",
         type: "input"
       },
       {
         key: "mainStatement",
         label: "Frase principal",
         selector: "#mainStatement",
+        dataPath: "mainStatement",
         type: "input"
       },
       {
         key: "mainInsight",
         label: "Insight",
         selector: "#mainInsight",
+        dataPath: "mainInsight",
         type: "textarea"
       },
       {
         key: "supportingText",
         label: "Texto de apoio",
         selector: "#supportingText",
+        dataPath: "supportingText",
         type: "textarea"
       },
 
@@ -51,6 +57,7 @@ const editorSchemas = {
         key: "comparisonSubtitle",
         label: "Descrição da comparação",
         selector: ".ic-comparison-heading p",
+        dataPath: "comparisonSubtitle",
         type: "input"
       },
 
@@ -59,18 +66,21 @@ const editorSchemas = {
         key: "homeTeam",
         label: "Nome da equipe",
         selector: "#homeTeam",
+        dataPath: "home.team",
         type: "input"
       },
       {
         key: "homeShots",
         label: "Finalizações",
         selector: "#homeShots",
+        dataPath: "home.shots",
         type: "input"
       },
       {
         key: "homeXg",
         label: "xG",
         selector: "#homeXg",
+        dataPath: "home.xg",
         type: "input"
       },
       {
@@ -78,6 +88,7 @@ const editorSchemas = {
         label: "Texto de apoio",
         selector:
           ".ic-team-block:not(.ic-team-block-away) .ic-team-reading",
+        dataPath: "home.reading",
         type: "textarea"
       },
 
@@ -86,24 +97,28 @@ const editorSchemas = {
         key: "awayTeam",
         label: "Nome da equipe",
         selector: "#awayTeam",
+        dataPath: "away.team",
         type: "input"
       },
       {
         key: "awayShots",
         label: "Finalizações",
         selector: "#awayShots",
+        dataPath: "away.shots",
         type: "input"
       },
       {
         key: "awayXg",
         label: "xG",
         selector: "#awayXg",
+        dataPath: "away.xg",
         type: "input"
       },
       {
         key: "awayReading",
         label: "Texto de apoio",
         selector: ".ic-team-block-away .ic-team-reading",
+        dataPath: "away.reading",
         type: "textarea"
       },
 
@@ -112,12 +127,14 @@ const editorSchemas = {
         key: "readingText",
         label: "Leitura",
         selector: "#readingText",
+        dataPath: "reading",
         type: "textarea"
       },
       {
         key: "sourceText",
         label: "Fonte",
         selector: "#sourceText",
+        dataPath: "source",
         type: "input"
       }
     ]
@@ -246,13 +263,19 @@ function createField({
 }
 
 function numberFromInput(value) {
-  const parsed = Number(
-    String(value).replace(",", ".")
-  );
+  const normalized = String(value ?? "")
+    .trim()
+    .replace(",", ".");
+
+  if (normalized === "") {
+    return null;
+  }
+
+  const parsed = Number(normalized);
 
   return Number.isFinite(parsed)
     ? parsed
-    : 0;
+    : null;
 }
 
 function rerenderDataComponent(
@@ -295,6 +318,22 @@ function buildDataInspector({
 
   form.appendChild(
     createSection("Informações gerais")
+  );
+
+  form.appendChild(
+    createField({
+      label: "Título",
+      value: data.title,
+      onInput: (value) => {
+        data.title = value;
+
+        rerenderDataComponent(
+          win,
+          schema,
+          data
+        );
+      }
+    })
   );
 
   form.appendChild(
@@ -365,7 +404,11 @@ function buildDataInspector({
     createSection("Métricas")
   );
 
-  data.metrics.forEach((metric) => {
+  const metrics = Array.isArray(data.metrics)
+    ? data.metrics
+    : [];
+
+  metrics.forEach((metric) => {
     form.appendChild(
       createSection(metric.label)
     );
@@ -375,8 +418,13 @@ function buildDataInspector({
         label: data.home.name,
         value: metric.home,
         onInput: (value) => {
-          metric.home =
-            numberFromInput(value);
+          const parsed = numberFromInput(value);
+
+          if (parsed === null) {
+            return;
+          }
+
+          metric.home = parsed;
 
           rerenderDataComponent(
             win,
@@ -392,8 +440,13 @@ function buildDataInspector({
         label: data.away.name,
         value: metric.away,
         onInput: (value) => {
-          metric.away =
-            numberFromInput(value);
+          const parsed = numberFromInput(value);
+
+          if (parsed === null) {
+            return;
+          }
+
+          metric.away = parsed;
 
           rerenderDataComponent(
             win,
@@ -439,6 +492,59 @@ function buildDataInspector({
         );
       }
     })
+  );
+}
+
+function setNestedObjectValue(
+  target,
+  path,
+  value
+) {
+  if (!target || !path) {
+    return;
+  }
+
+  const parts = String(path)
+    .split(".")
+    .filter(Boolean);
+
+  if (!parts.length) {
+    return;
+  }
+
+  let cursor = target;
+
+  for (let index = 0; index < parts.length - 1; index += 1) {
+    const key = parts[index];
+
+    if (
+      !cursor[key] ||
+      typeof cursor[key] !== "object"
+    ) {
+      cursor[key] = {};
+    }
+
+    cursor = cursor[key];
+  }
+
+  cursor[parts[parts.length - 1]] = value;
+}
+
+function syncDomFieldData(
+  frame,
+  field,
+  value
+) {
+  if (!field.dataPath) {
+    return;
+  }
+
+  const data = frame.contentWindow?.insight;
+
+  setNestedObjectValue(
+    data,
+    field.dataPath,
+    value
   );
 }
 
@@ -503,6 +609,12 @@ function buildDomInspector({
         onInput: (newValue) => {
           currentValues[field.key] =
             newValue;
+
+          syncDomFieldData(
+            frame,
+            field,
+            newValue
+          );
 
           updatePreviewField(
             frame,
