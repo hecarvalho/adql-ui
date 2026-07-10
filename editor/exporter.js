@@ -52,6 +52,7 @@ function findPosterElement(doc) {
     doc.querySelector(".tp-poster") ||
     doc.querySelector(".rp-poster") ||
     doc.querySelector(".pc-poster") ||
+    doc.querySelector(".tb-poster") ||
     doc.querySelector(".adql-sheet")
   );
 }

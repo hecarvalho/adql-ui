@@ -43,5 +43,14 @@ const componentsRegistry = [
     dataPath: "../data/player-comparison.js",
     category: "Jogadores",
     status: "finalizado"
+  },
+  {
+    id: "text-table",
+    name: "Table Builder",
+    code: "C-06",
+    htmlPath: "../components/text-table.html",
+    dataPath: "../data/text-table.js",
+    category: "Tabela",
+    status: "finalizado"
   }
 ];

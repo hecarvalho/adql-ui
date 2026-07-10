@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ADQL UI — Table Builder</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Barlow+Semi+Condensed:wght@500;600;700;800;900&family=Inter:wght@400;500;600;700;800&display=swap"
+    rel="stylesheet"
+  />
+
+  <link rel="stylesheet" href="../css/core/core.css" />
+  <link rel="stylesheet" href="../css/components/text-table.css" />
+</head>
+<body>
+  <main class="adql-canvas">
+    <section class="tb-poster">
+      <div class="tb-background" aria-hidden="true">
+        <div class="tb-dot-grid tb-dot-grid-top"></div>
+        <div class="tb-dot-grid tb-dot-grid-bottom"></div>
+      </div>
+
+      <header class="tb-header">
+        <div>
+          <p id="tbKicker" class="tb-kicker">Tabela comparativa</p>
+          <h1 id="tbTitle" class="tb-title">Tentativas e conclusões</h1>
+          <p id="tbSubtitle" class="tb-subtitle">Brasil × Noruega • Comparação direta</p>
+        </div>
+
+        <div class="tb-index">
+          <span>ADQL UI</span>
+          <strong id="tbCode">C-06</strong>
+        </div>
+      </header>
+
+      <section class="tb-table-section">
+        <div class="tb-section-heading">
+          <div>
+            <span id="tbSectionLabel">Dados</span>
+            <h2 id="tbSectionTitle">Tabela de comparação</h2>
+          </div>
+          <p id="tbSectionText">Informações organizadas em linhas e colunas.</p>
+        </div>
+
+        <div id="tbTableMount" class="tb-table-mount"></div>
+      </section>
+
+      <section id="tbNoteBlock" class="tb-note-block">
+        <span>Leitura</span>
+        <p id="tbNoteText">Use a tabela para comparar informações de forma direta e objetiva.</p>
+      </section>
+
+      <footer class="tb-footer">
+        <div>
+          <strong>Fonte</strong>
+          <span id="tbSourceText">Dados próprios • Modelo ADQL</span>
+        </div>
+
+        <div class="tb-footer-brand">
+          <strong>Além das quatro linhas</strong>
+          <span>Henrique Carvalho</span>
+        </div>
+      </footer>
+
+      <div class="tb-wave" aria-hidden="true"></div>
+      <div class="tb-wave-dots" aria-hidden="true"></div>
+    </section>
+  </main>
+
+  <script src="../data/text-table.js"></script>
+  <script src="../js/text-table.js"></script>
+</body>
+</html>
