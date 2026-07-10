@@ -52,5 +52,14 @@ const componentsRegistry = [
     dataPath: "../data/text-table.js",
     category: "Tabela",
     status: "finalizado"
+  },
+  {
+    id: "title-cover",
+    name: "Title Cover",
+    code: "C-07",
+    htmlPath: "../components/title-cover.html",
+    dataPath: "../data/title-cover.js",
+    category: "Capa",
+    status: "finalizado"
   }
 ];

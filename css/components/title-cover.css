@@ -1,0 +1,603 @@
+.tc-canvas {
+  min-width: 0;
+  padding: 28px;
+}
+
+.tc-poster {
+  --tc-gold: #c58b12;
+  --tc-navy: #071f3d;
+  --tc-deep-navy: #04162c;
+  --tc-cream: #fffaf0;
+  --tc-paper: #f7f2e8;
+  --tc-muted: rgba(255, 250, 240, .68);
+  --tc-border: rgba(255, 250, 240, .18);
+  --tc-title-size: 132px;
+
+  position: relative;
+  isolation: isolate;
+  width: min(1600px, 100%);
+  aspect-ratio: 16 / 9;
+  overflow: hidden;
+  padding: 56px 82px 44px;
+  background:
+    radial-gradient(circle at 72% 18%, rgba(197, 139, 18, .16), transparent 28%),
+    linear-gradient(135deg, #061a33 0%, #071f3d 58%, #0b2b51 100%);
+  color: var(--tc-cream);
+  font-family: "Barlow Semi Condensed", "Arial Narrow", Arial, sans-serif;
+  box-shadow: 0 30px 80px rgba(7, 31, 61, .18);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+.tc-poster::before,
+.tc-poster::after {
+  content: "";
+  position: absolute;
+  pointer-events: none;
+  opacity: 0;
+}
+
+.tc-background {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.tc-glow {
+  position: absolute;
+  width: 640px;
+  height: 640px;
+  right: -170px;
+  top: -210px;
+  border-radius: 50%;
+  border: 2px solid rgba(197, 139, 18, .22);
+  box-shadow:
+    0 0 0 58px rgba(197, 139, 18, .025),
+    0 0 0 130px rgba(197, 139, 18, .018);
+}
+
+.tc-grid {
+  position: absolute;
+  right: 70px;
+  top: 82px;
+  width: 260px;
+  height: 170px;
+  background-image: radial-gradient(
+    rgba(255, 250, 240, .56) 1.2px,
+    transparent 1.2px
+  );
+  background-size: 16px 16px;
+  opacity: .18;
+  mask-image: linear-gradient(
+    90deg,
+    transparent,
+    #000 32%,
+    #000
+  );
+}
+
+.tc-pitch-lines {
+  position: absolute;
+  right: -118px;
+  top: 178px;
+  width: 720px;
+  height: 480px;
+  opacity: .14;
+  transform: rotate(-8deg);
+}
+
+.tc-pitch-lines::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border: 2px solid rgba(255, 250, 240, .75);
+}
+
+.tc-pitch-line {
+  position: absolute;
+  display: block;
+  background: rgba(255, 250, 240, .75);
+}
+
+.tc-pitch-line-a {
+  left: 50%;
+  top: 0;
+  bottom: 0;
+  width: 2px;
+}
+
+.tc-pitch-line-b {
+  left: 0;
+  right: 0;
+  top: 50%;
+  height: 2px;
+  opacity: 0;
+}
+
+.tc-pitch-circle {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 150px;
+  height: 150px;
+  border: 2px solid rgba(255, 250, 240, .75);
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+}
+
+.tc-pitch-box {
+  position: absolute;
+  right: 0;
+  top: 20%;
+  width: 170px;
+  height: 60%;
+  border: 2px solid rgba(255, 250, 240, .75);
+  border-right: 0;
+}
+
+.tc-gold-arc {
+  position: absolute;
+  width: 760px;
+  height: 430px;
+  right: -250px;
+  bottom: -300px;
+  border-radius: 50% 0 0 0;
+  border-top: 8px solid var(--tc-gold);
+  background: rgba(3, 20, 39, .78);
+  transform: rotate(-4deg);
+}
+
+.tc-big-code {
+  position: absolute;
+  right: 40px;
+  bottom: -96px;
+  color: rgba(255, 250, 240, .035);
+  font-size: 430px;
+  font-weight: 900;
+  line-height: 1;
+  letter-spacing: -.08em;
+  white-space: nowrap;
+  user-select: none;
+}
+
+.tc-question-mark {
+  display: none;
+}
+
+.tc-header,
+.tc-content,
+.tc-footer {
+  position: relative;
+  z-index: 3;
+}
+
+.tc-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  min-height: 44px;
+}
+
+.tc-kicker-wrap {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  transition: opacity 160ms ease, transform 160ms ease;
+}
+
+.tc-kicker-wrap.is-hidden {
+  opacity: 0;
+  transform: translateY(-6px);
+  pointer-events: none;
+}
+
+.tc-kicker-line {
+  display: block;
+  width: 42px;
+  height: 4px;
+  background: var(--tc-gold);
+}
+
+.tc-kicker {
+  margin: 0;
+  color: var(--tc-gold);
+  font-family: "Inter", Arial, sans-serif;
+  font-size: 16px;
+  font-weight: 800;
+  letter-spacing: .18em;
+  text-transform: uppercase;
+}
+
+.tc-index {
+  min-width: 118px;
+  text-align: right;
+  font-family: "Inter", Arial, sans-serif;
+  text-transform: uppercase;
+}
+
+.tc-index span {
+  display: block;
+  color: rgba(255, 250, 240, .54);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: .18em;
+}
+
+.tc-index strong {
+  display: block;
+  margin-top: 8px;
+  color: var(--tc-gold);
+  font-size: 30px;
+  font-weight: 900;
+}
+
+.tc-content {
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  min-height: 470px;
+  padding-top: 18px;
+  padding-bottom: 24px;
+}
+
+.tc-title-frame {
+  width: min(1120px, 78%);
+}
+
+.tc-title {
+  margin: 0;
+  max-width: 100%;
+  color: var(--tc-cream);
+  font-size: var(--tc-title-size);
+  font-weight: 900;
+  line-height: .83;
+  letter-spacing: -.045em;
+  text-transform: uppercase;
+  white-space: pre-line;
+  overflow-wrap: anywhere;
+}
+
+.tc-subtitle-wrap {
+  display: grid;
+  grid-template-columns: 58px minmax(0, 760px);
+  align-items: start;
+  gap: 18px;
+  margin-top: 24px;
+}
+
+.tc-subtitle-rule {
+  display: block;
+  width: 58px;
+  height: 4px;
+  margin-top: 9px;
+  background: var(--tc-gold);
+}
+
+.tc-subtitle {
+  margin: 0;
+  color: var(--tc-muted);
+  font-family: "Inter", Arial, sans-serif;
+  font-size: 22px;
+  font-weight: 600;
+  line-height: 1.55;
+  white-space: pre-line;
+}
+
+.tc-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-top: 16px;
+  border-top: 1px solid var(--tc-border);
+  color: rgba(255, 250, 240, .52);
+  font-family: "Inter", Arial, sans-serif;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: .15em;
+  text-transform: uppercase;
+}
+
+/* ==========================================================
+   COMPOSIÇÃO 01 — EDITORIAL
+   Mantém a composição aprovada pelo usuário.
+========================================================== */
+
+.tc-composition-editorial .tc-title-frame {
+  width: min(1160px, 80%);
+}
+
+/* ==========================================================
+   COMPOSIÇÃO 02 — IMPACTO
+   Mais agressiva: contraste, diagonais e escala.
+========================================================== */
+
+.tc-composition-impact {
+  background:
+    radial-gradient(circle at 86% 20%, rgba(197, 139, 18, .22), transparent 26%),
+    linear-gradient(118deg, #031327 0%, #061a33 46%, #0b2b51 100%);
+}
+
+.tc-composition-impact::before {
+  z-index: 1;
+  right: -190px;
+  top: 185px;
+  width: 760px;
+  height: 86px;
+  background: rgba(197, 139, 18, .92);
+  transform: rotate(-13deg);
+  opacity: 1;
+}
+
+.tc-composition-impact::after {
+  z-index: 1;
+  right: -105px;
+  top: 300px;
+  width: 690px;
+  height: 18px;
+  background: rgba(255, 250, 240, .14);
+  transform: rotate(-13deg);
+  opacity: 1;
+}
+
+.tc-composition-impact .tc-glow {
+  width: 820px;
+  height: 820px;
+  right: -330px;
+  top: -330px;
+  border-color: rgba(197, 139, 18, .34);
+  box-shadow:
+    0 0 0 76px rgba(197, 139, 18, .035),
+    0 0 0 165px rgba(197, 139, 18, .02);
+}
+
+.tc-composition-impact .tc-grid {
+  right: auto;
+  left: 70px;
+  top: 126px;
+  width: 310px;
+  opacity: .12;
+  mask-image: linear-gradient(90deg, #000, #000 68%, transparent);
+}
+
+.tc-composition-impact .tc-pitch-lines {
+  right: -70px;
+  top: 112px;
+  width: 760px;
+  height: 520px;
+  opacity: .08;
+  transform: rotate(-13deg);
+}
+
+.tc-composition-impact .tc-gold-arc {
+  width: 980px;
+  height: 360px;
+  right: -280px;
+  bottom: -320px;
+  border-top-width: 10px;
+  background: rgba(1, 12, 25, .9);
+}
+
+.tc-composition-impact .tc-big-code {
+  right: -10px;
+  bottom: -126px;
+  color: rgba(197, 139, 18, .13);
+  font-size: 520px;
+  letter-spacing: -.1em;
+}
+
+.tc-composition-impact .tc-kicker-wrap {
+  gap: 0;
+  padding: 10px 14px;
+  background: var(--tc-gold);
+}
+
+.tc-composition-impact .tc-kicker-line {
+  display: none;
+}
+
+.tc-composition-impact .tc-kicker {
+  color: var(--tc-deep-navy);
+  font-size: 14px;
+  letter-spacing: .16em;
+}
+
+.tc-composition-impact .tc-index span {
+  color: rgba(255, 250, 240, .7);
+}
+
+.tc-composition-impact .tc-index strong {
+  color: var(--tc-cream);
+}
+
+.tc-composition-impact .tc-content {
+  min-height: 472px;
+  padding-top: 12px;
+  padding-bottom: 20px;
+}
+
+.tc-composition-impact .tc-title-frame {
+  width: min(1380px, 92%);
+}
+
+.tc-composition-impact .tc-title {
+  line-height: .77;
+  letter-spacing: -.052em;
+  text-shadow: 0 16px 32px rgba(0, 0, 0, .16);
+}
+
+.tc-composition-impact .tc-subtitle-wrap {
+  grid-template-columns: 84px minmax(0, 820px);
+  gap: 18px;
+  margin-top: 18px;
+}
+
+.tc-composition-impact .tc-subtitle-rule {
+  width: 84px;
+  height: 6px;
+  margin-top: 8px;
+}
+
+.tc-composition-impact .tc-subtitle {
+  color: rgba(255, 250, 240, .82);
+  font-size: 21px;
+  font-weight: 700;
+}
+
+.tc-composition-impact .tc-footer {
+  border-top-color: rgba(197, 139, 18, .48);
+  color: rgba(255, 250, 240, .68);
+}
+
+/* ==========================================================
+   COMPOSIÇÃO 03 — ESSENCIAL
+   Mais limpa: papel claro, poucos elementos e muito foco.
+========================================================== */
+
+.tc-composition-minimal {
+  background:
+    radial-gradient(circle at 86% 18%, rgba(197, 139, 18, .055), transparent 22%),
+    linear-gradient(180deg, #fffdf8 0%, #f4efe5 100%);
+  color: var(--tc-navy);
+  box-shadow: 0 28px 72px rgba(7, 31, 61, .12);
+}
+
+.tc-composition-minimal::before {
+  z-index: 1;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 12px;
+  background: var(--tc-gold);
+  opacity: 1;
+}
+
+.tc-composition-minimal::after {
+  z-index: 1;
+  left: 82px;
+  right: 82px;
+  top: 160px;
+  height: 1px;
+  background: rgba(7, 31, 61, .08);
+  opacity: 1;
+}
+
+.tc-composition-minimal .tc-glow,
+.tc-composition-minimal .tc-pitch-lines,
+.tc-composition-minimal .tc-gold-arc,
+.tc-composition-minimal .tc-question-mark {
+  display: none;
+}
+
+.tc-composition-minimal .tc-grid {
+  right: 72px;
+  top: 72px;
+  width: 220px;
+  height: 140px;
+  background-image: radial-gradient(rgba(7, 31, 61, .5) 1px, transparent 1px);
+  opacity: .08;
+  mask-image: linear-gradient(90deg, transparent, #000 40%, #000);
+}
+
+.tc-composition-minimal .tc-big-code {
+  right: 44px;
+  bottom: -84px;
+  color: rgba(7, 31, 61, .045);
+  font-size: 440px;
+}
+
+.tc-composition-minimal .tc-kicker {
+  color: var(--tc-gold);
+}
+
+.tc-composition-minimal .tc-index span {
+  color: rgba(7, 31, 61, .48);
+}
+
+.tc-composition-minimal .tc-index strong {
+  color: var(--tc-navy);
+}
+
+.tc-composition-minimal .tc-content {
+  min-height: 520px;
+  padding-top: 24px;
+  padding-bottom: 18px;
+}
+
+.tc-composition-minimal .tc-title-frame {
+  width: min(1080px, 72%);
+}
+
+.tc-composition-minimal .tc-title {
+  color: var(--tc-navy);
+  line-height: .86;
+  letter-spacing: -.04em;
+}
+
+.tc-composition-minimal .tc-subtitle-wrap {
+  grid-template-columns: 42px minmax(0, 720px);
+  gap: 16px;
+  margin-top: 26px;
+}
+
+.tc-composition-minimal .tc-subtitle-rule {
+  width: 42px;
+  height: 3px;
+  margin-top: 10px;
+}
+
+.tc-composition-minimal .tc-subtitle {
+  color: rgba(7, 31, 61, .62);
+  font-size: 20px;
+  font-weight: 600;
+}
+
+.tc-composition-minimal .tc-footer {
+  border-top-color: rgba(7, 31, 61, .16);
+  color: rgba(7, 31, 61, .46);
+}
+
+/* ==========================================================
+   PREVIEW RESPONSIVO
+========================================================== */
+
+@media (max-width: 980px) {
+  .tc-canvas {
+    padding: 12px;
+  }
+
+  .tc-poster {
+    padding: 38px 48px 32px;
+  }
+
+  .tc-content,
+  .tc-composition-impact .tc-content,
+  .tc-composition-minimal .tc-content {
+    min-height: 420px;
+    padding-top: 18px;
+    padding-bottom: 22px;
+  }
+
+  .tc-composition-minimal .tc-content {
+    min-height: 470px;
+    padding-top: 20px;
+    padding-bottom: 18px;
+  }
+
+  .tc-kicker {
+    font-size: 13px;
+  }
+
+  .tc-subtitle,
+  .tc-composition-impact .tc-subtitle,
+  .tc-composition-minimal .tc-subtitle {
+    font-size: 18px;
+  }
+
+  .tc-big-code,
+  .tc-composition-impact .tc-big-code,
+  .tc-composition-minimal .tc-big-code {
+    font-size: 340px;
+  }
+}
