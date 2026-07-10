@@ -636,6 +636,48 @@ function tacticalNumber(value) {
     : 0;
 }
 
+function tacticalOptionalNumber(value) {
+  const normalized = String(value ?? "")
+    .trim()
+    .replace(",", ".");
+
+  if (normalized === "") {
+    return null;
+  }
+
+  const parsed = Number(normalized);
+
+  return Number.isFinite(parsed)
+    ? parsed
+    : null;
+}
+
+function tacticalSafePlayerLabel(
+  value,
+  fallback = "Posição livre"
+) {
+  const normalized = String(value ?? "").trim();
+
+  return normalized
+    ? normalized.toUpperCase()
+    : fallback;
+}
+
+function tacticalRouteMeta(route) {
+  const from = String(route?.from ?? "").trim();
+  const to = String(route?.to ?? "").trim();
+
+  if (from && to) {
+    return `${from.toUpperCase()} → ${to.toUpperCase()}`;
+  }
+
+  if (String(route?.path ?? "").trim()) {
+    return "Trajeto livre";
+  }
+
+  return "Rota incompleta";
+}
+
 function tacticalGetByPath(object, path) {
   return path
     .split(".")
@@ -963,8 +1005,11 @@ function tacticalAddRoute(
 ) {
   const config = TACTICAL_ROUTE_TOOLS[mode];
 
-  if (!config) {
-    return;
+  if (!config || !from || !to || from === to) {
+    return {
+      ok: false,
+      reason: "invalid"
+    };
   }
 
   const routes = ensureTacticalArray(
@@ -972,13 +1017,26 @@ function tacticalAddRoute(
     config.arrayKey
   );
 
+  const alreadyExists = routes.some(
+    (route) =>
+      route?.from === from &&
+      route?.to === to
+  );
+
+  if (alreadyExists) {
+    return {
+      ok: false,
+      reason: "duplicate"
+    };
+  }
+
   if (mode === "add-carry") {
     routes.push({
       from,
       to
     });
 
-    return;
+    return { ok: true };
   }
 
   routes.push({
@@ -986,6 +1044,8 @@ function tacticalAddRoute(
     to,
     bend: 0
   });
+
+  return { ok: true };
 }
 
 function tacticalNextStepNumber(data) {
@@ -1808,7 +1868,7 @@ function tacticalBuildRoutesCard({
       tacticalElement(
         "div",
         "ti-list-meta",
-        `${item.route.from.toUpperCase()} → ${item.route.to.toUpperCase()}`
+        tacticalRouteMeta(item.route)
       )
     );
 
@@ -1895,8 +1955,17 @@ function tacticalCompactNumberField({
   const input = document.createElement("input");
 
   input.value = value ?? "";
+  input.inputMode = "decimal";
   input.oninput = () => {
-    onInput(tacticalNumber(input.value));
+    const parsed = tacticalOptionalNumber(
+      input.value
+    );
+
+    if (parsed === null) {
+      return;
+    }
+
+    onInput(parsed);
   };
 
   wrapper.appendChild(input);
@@ -2164,7 +2233,9 @@ function tacticalBuildAdvancedElements({
         tacticalElement(
           "div",
           "ti-list-title",
-          pressure.playerId.toUpperCase()
+          tacticalSafePlayerLabel(
+            pressure.playerId
+          )
         )
       );
 
@@ -2188,10 +2259,17 @@ function tacticalBuildAdvancedElements({
       radius.className = "ti-mini-input";
       radius.value = pressure.r ?? 30;
       radius.title = "Raio";
+      radius.inputMode = "decimal";
       radius.oninput = () => {
-        pressure.r = tacticalNumber(
+        const parsed = tacticalOptionalNumber(
           radius.value
         );
+
+        if (parsed === null) {
+          return;
+        }
+
+        pressure.r = parsed;
         rerender();
       };
 
@@ -2253,7 +2331,10 @@ function tacticalBuildAdvancedElements({
         tacticalElement(
           "div",
           "ti-list-title",
-          step.playerId.toUpperCase()
+          tacticalSafePlayerLabel(
+            step.playerId,
+            `Marcador ${step.number ?? index + 1}`
+          )
         )
       );
 
@@ -2477,12 +2558,27 @@ function tacticalAttachFrameEvents({
         return;
       }
 
-      tacticalAddRoute(
+      const routeResult = tacticalAddRoute(
         data,
         state.mode,
         state.routeStartPlayerId,
         playerId
       );
+
+      if (!routeResult?.ok) {
+        state.statusMessage =
+          routeResult?.reason === "duplicate"
+            ? "Esse movimento já existe entre os dois jogadores."
+            : "Não foi possível criar esse movimento.";
+        state.routeStartPlayerId = null;
+
+        tacticalSyncInteractionState(
+          win,
+          state
+        );
+        renderWorkspace();
+        return;
+      }
 
       state.mode = null;
       state.routeStartPlayerId = null;
@@ -2508,7 +2604,10 @@ function tacticalAttachFrameEvents({
           pressure.playerId === playerId
       );
 
-      if (!alreadyExists) {
+      if (alreadyExists) {
+        state.statusMessage =
+          "Esse jogador já possui um indicador de pressão.";
+      } else {
         pressures.push({
           playerId,
           r: 30
@@ -2528,13 +2627,24 @@ function tacticalAttachFrameEvents({
     }
 
     if (state.mode === "add-step") {
-      ensureTacticalArray(
+      const steps = ensureTacticalArray(
         data,
         "steps"
-      ).push({
-        playerId,
-        number: tacticalNextStepNumber(data)
-      });
+      );
+
+      const alreadyExists = steps.some(
+        (step) => step?.playerId === playerId
+      );
+
+      if (alreadyExists) {
+        state.statusMessage =
+          "Esse jogador já possui um marcador numerado.";
+      } else {
+        steps.push({
+          playerId,
+          number: tacticalNextStepNumber(data)
+        });
+      }
 
       state.mode = null;
       state.selectedPlayerId = playerId;
@@ -2636,7 +2746,8 @@ function tacticalAttachFrameEvents({
   exportButtons.forEach((button) => {
     button.addEventListener(
       "click",
-      handleExport
+      handleExport,
+      true
     );
   });
 
@@ -2657,6 +2768,11 @@ function tacticalAttachFrameEvents({
     handleEscape
   );
 
+  doc.addEventListener(
+    "keydown",
+    handleEscape
+  );
+
   state.cleanup = () => {
     doc.removeEventListener(
       "tactical:player-click",
@@ -2671,11 +2787,17 @@ function tacticalAttachFrameEvents({
     exportButtons.forEach((button) => {
       button.removeEventListener(
         "click",
-        handleExport
+        handleExport,
+        true
       );
     });
 
     document.removeEventListener(
+      "keydown",
+      handleEscape
+    );
+
+    doc.removeEventListener(
       "keydown",
       handleEscape
     );
@@ -2831,6 +2953,21 @@ buildInspector = function buildInspectorWithTacticalMode(
   ) {
     buildAdvancedTacticalInspector(args);
     return;
+  }
+
+  const previousState = tacticalEditorStates.get(
+    args.frame
+  );
+
+  if (
+    previousState &&
+    typeof previousState.cleanup === "function"
+  ) {
+    previousState.cleanup();
+    previousState.cleanup = null;
+    previousState.mode = null;
+    previousState.routeStartPlayerId = null;
+    previousState.statusMessage = "";
   }
 
   baseBuildInspector(args);

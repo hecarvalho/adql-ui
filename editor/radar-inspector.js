@@ -55,6 +55,22 @@ function riNumber(value, fallback = 0) {
     : fallback;
 }
 
+function riOptionalNumber(value) {
+  const normalized = String(value ?? "")
+    .trim()
+    .replace(",", ".");
+
+  if (!normalized) {
+    return null;
+  }
+
+  const parsed = Number(normalized);
+
+  return Number.isFinite(parsed)
+    ? parsed
+    : null;
+}
+
 function riSafeArray(value) {
   return Array.isArray(value)
     ? value
@@ -71,7 +87,8 @@ function riGetState(frame) {
       drag: null,
       boundDocument: null,
       renderWorkspace: null,
-      rerender: null
+      rerender: null,
+      cleanup: null
     };
 
     radarEditorStates.set(frame, state);
@@ -139,6 +156,8 @@ function riField({
   type = "text",
   placeholder = "",
   onInput,
+  onChange,
+  onBlur,
   className = ""
 }) {
   const wrapper = riElement(
@@ -159,6 +178,14 @@ function riField({
 
   input.addEventListener("input", () => {
     onInput?.(input.value, input);
+  });
+
+  input.addEventListener("change", () => {
+    onChange?.(input.value, input);
+  });
+
+  input.addEventListener("blur", () => {
+    onBlur?.(input.value, input);
   });
 
   wrapper.appendChild(labelEl);
@@ -794,8 +821,16 @@ function riNormalizeData(data) {
 
   data.metrics.forEach((metric, index) => {
     metric.label = metric.label ?? `Métrica ${index + 1}`;
-    metric.home = riNumber(metric.home, 0);
-    metric.away = riNumber(metric.away, 0);
+    metric.home = riClamp(
+      riNumber(metric.home, 0),
+      0,
+      data.maxValue
+    );
+    metric.away = riClamp(
+      riNumber(metric.away, 0),
+      0,
+      data.maxValue
+    );
   });
 
   data.cards.forEach((card, index) => {
@@ -821,6 +856,58 @@ function riRerenderComponent(
   }
 }
 
+function riResetSelectionStyle(frame) {
+  const doc = frame.contentDocument;
+  const svg = doc?.getElementById("radarSvg");
+
+  if (svg) {
+    svg
+      .querySelectorAll(
+        "[data-radar-metric-index]"
+      )
+      .forEach((label) => {
+        label.setAttribute(
+          "fill",
+          label.dataset.riBaseFill || "#071F3D"
+        );
+        label.setAttribute(
+          "font-size",
+          label.dataset.riBaseFontSize || "20"
+        );
+      });
+
+    svg
+      .querySelectorAll(
+        "circle[data-radar-index]"
+      )
+      .forEach((node) => {
+        const team = node.dataset.radarTeam;
+        node.setAttribute(
+          "r",
+          node.dataset.riBaseRadius ||
+            (team === "home" ? "9" : "8")
+        );
+        node.style.filter =
+          node.dataset.riBaseFilter || "";
+      });
+  }
+
+  doc
+    ?.querySelectorAll(
+      "[data-radar-card-index]"
+    )
+    .forEach((card) => {
+      card.style.outline =
+        card.dataset.riBaseOutline || "";
+      card.style.outlineOffset =
+        card.dataset.riBaseOutlineOffset || "";
+    });
+}
+
+function riClearSelectionStyle(frame) {
+  riResetSelectionStyle(frame);
+}
+
 function riApplySelectionStyle(
   frame,
   data,
@@ -829,9 +916,46 @@ function riApplySelectionStyle(
   const doc = frame.contentDocument;
   const svg = doc?.getElementById("radarSvg");
 
-  if (!svg) {
+  if (!doc || !svg) {
     return;
   }
+
+  svg
+    .querySelectorAll(
+      "[data-radar-metric-index]"
+    )
+    .forEach((label) => {
+      label.dataset.riBaseFill ??=
+        label.getAttribute("fill") || "#071F3D";
+      label.dataset.riBaseFontSize ??=
+        label.getAttribute("font-size") || "20";
+    });
+
+  svg
+    .querySelectorAll(
+      "circle[data-radar-index]"
+    )
+    .forEach((node) => {
+      const team = node.dataset.radarTeam;
+      node.dataset.riBaseRadius ??=
+        node.getAttribute("r") ||
+        (team === "home" ? "9" : "8");
+      node.dataset.riBaseFilter ??=
+        node.style.filter || "";
+    });
+
+  doc
+    .querySelectorAll(
+      "[data-radar-card-index]"
+    )
+    .forEach((card) => {
+      card.dataset.riBaseOutline ??=
+        card.style.outline || "";
+      card.dataset.riBaseOutlineOffset ??=
+        card.style.outlineOffset || "";
+    });
+
+  riResetSelectionStyle(frame);
 
   const selectedIndex =
     state.selectedMetricIndex;
@@ -937,10 +1061,25 @@ function riUpdateMetricFromPointer({
     return;
   }
 
-  const distance = Math.hypot(
-    point.x - RADAR_GEOMETRY.cx,
-    point.y - RADAR_GEOMETRY.cy
-  );
+  const total = data.metrics.length;
+
+  if (!total) {
+    return;
+  }
+
+  const angle =
+    -90 +
+    (360 / total) * state.drag.index;
+  const radians =
+    (Math.PI / 180) * angle;
+  const axisX = Math.cos(radians);
+  const axisY = Math.sin(radians);
+  const offsetX =
+    point.x - RADAR_GEOMETRY.cx;
+  const offsetY =
+    point.y - RADAR_GEOMETRY.cy;
+  const projection =
+    offsetX * axisX + offsetY * axisY;
 
   const maxValue = Math.max(
     1,
@@ -949,11 +1088,10 @@ function riUpdateMetricFromPointer({
 
   const value = Math.round(
     riClamp(
-      (distance / RADAR_GEOMETRY.radius) *
-        maxValue,
+      projection / RADAR_GEOMETRY.radius,
       0,
-      maxValue
-    )
+      1
+    ) * maxValue
   );
 
   const metric =
@@ -1002,109 +1140,154 @@ function riAttachFrameEvents({
 }) {
   const doc = frame.contentDocument;
 
-  if (
-    !doc ||
-    state.boundDocument === doc
-  ) {
+  if (!doc) {
     return;
   }
 
+  if (state.boundDocument === doc) {
+    return;
+  }
+
+  state.cleanup?.();
+  state.cleanup = null;
   state.boundDocument = doc;
 
   const svg = doc.getElementById("radarSvg");
 
+  const handlePointerDown = (event) => {
+    const node = event.target.closest?.(
+      "circle[data-radar-team]"
+    );
+
+    if (!node) {
+      return;
+    }
+
+    const index = Number(
+      node.dataset.radarIndex
+    );
+    const team = node.dataset.radarTeam;
+
+    if (
+      !Number.isInteger(index) ||
+      !["home", "away"].includes(team)
+    ) {
+      return;
+    }
+
+    state.selectedMetricIndex = index;
+    state.drag = {
+      index,
+      team,
+      pointerId: event.pointerId
+    };
+
+    try {
+      svg?.setPointerCapture(
+        event.pointerId
+      );
+    } catch (error) {
+      // Alguns navegadores não oferecem captura
+      // de ponteiro dentro do iframe.
+    }
+
+    event.preventDefault();
+    renderWorkspace();
+    riApplySelectionStyle(
+      frame,
+      data,
+      state
+    );
+  };
+
+  const handlePointerMove = (event) => {
+    if (
+      !state.drag ||
+      state.drag.pointerId !== event.pointerId ||
+      !svg
+    ) {
+      return;
+    }
+
+    riUpdateMetricFromPointer({
+      svg,
+      event,
+      data,
+      state,
+      rerender
+    });
+
+    event.preventDefault();
+  };
+
+  const finishDrag = (event) => {
+    if (
+      !state.drag ||
+      state.drag.pointerId !== event.pointerId
+    ) {
+      return;
+    }
+
+    state.drag = null;
+    renderWorkspace();
+    riApplySelectionStyle(
+      frame,
+      data,
+      state
+    );
+  };
+
+  const handleSvgClick = (event) => {
+    const label = event.target.closest?.(
+      "[data-radar-metric-index]"
+    );
+
+    if (!label) {
+      return;
+    }
+
+    state.selectedMetricIndex = Number(
+      label.dataset.radarMetricIndex
+    );
+
+    renderWorkspace();
+    riApplySelectionStyle(
+      frame,
+      data,
+      state
+    );
+  };
+
+  const handleDocumentClick = (event) => {
+    const card = event.target.closest?.(
+      "[data-radar-card-index]"
+    );
+
+    if (!card) {
+      return;
+    }
+
+    state.selectedCardIndex = Number(
+      card.dataset.radarCardIndex
+    );
+
+    renderWorkspace();
+    riApplySelectionStyle(
+      frame,
+      data,
+      state
+    );
+  };
+
   if (svg) {
     svg.addEventListener(
       "pointerdown",
-      (event) => {
-        const node = event.target.closest?.(
-          "circle[data-radar-team]"
-        );
-
-        if (!node) {
-          return;
-        }
-
-        const index = Number(
-          node.dataset.radarIndex
-        );
-        const team =
-          node.dataset.radarTeam;
-
-        if (
-          !Number.isInteger(index) ||
-          !["home", "away"].includes(team)
-        ) {
-          return;
-        }
-
-        state.selectedMetricIndex = index;
-        state.drag = {
-          index,
-          team,
-          pointerId: event.pointerId
-        };
-
-        try {
-          svg.setPointerCapture(
-            event.pointerId
-          );
-        } catch (error) {
-          // O navegador pode não oferecer captura
-          // de ponteiro dentro do iframe.
-        }
-
-        event.preventDefault();
-        renderWorkspace();
-        riApplySelectionStyle(
-          frame,
-          data,
-          state
-        );
-      }
+      handlePointerDown
     );
-
     svg.addEventListener(
       "pointermove",
-      (event) => {
-        if (
-          !state.drag ||
-          state.drag.pointerId !==
-            event.pointerId
-        ) {
-          return;
-        }
-
-        riUpdateMetricFromPointer({
-          svg,
-          event,
-          data,
-          state,
-          rerender
-        });
-
-        event.preventDefault();
-      }
+      handlePointerMove
     );
-
-    const finishDrag = (event) => {
-      if (
-        !state.drag ||
-        state.drag.pointerId !==
-          event.pointerId
-      ) {
-        return;
-      }
-
-      state.drag = null;
-      renderWorkspace();
-      riApplySelectionStyle(
-        frame,
-        data,
-        state
-      );
-    };
-
     svg.addEventListener(
       "pointerup",
       finishDrag
@@ -1113,55 +1296,95 @@ function riAttachFrameEvents({
       "pointercancel",
       finishDrag
     );
-
     svg.addEventListener(
       "click",
-      (event) => {
-        const label = event.target.closest?.(
-          "[data-radar-metric-index]"
-        );
-
-        if (!label) {
-          return;
-        }
-
-        state.selectedMetricIndex = Number(
-          label.dataset.radarMetricIndex
-        );
-
-        renderWorkspace();
-        riApplySelectionStyle(
-          frame,
-          data,
-          state
-        );
-      }
+      handleSvgClick
     );
   }
 
   doc.addEventListener(
+    "pointerup",
+    finishDrag
+  );
+  doc.addEventListener(
+    "pointercancel",
+    finishDrag
+  );
+  doc.addEventListener(
     "click",
-    (event) => {
-      const card = event.target.closest?.(
-        "[data-radar-card-index]"
+    handleDocumentClick
+  );
+
+  const exportButtons = [
+    "exportDataBtn",
+    "exportHtmlBtn",
+    "exportPngBtn"
+  ]
+    .map((id) => document.getElementById(id))
+    .filter(Boolean);
+
+  const handleExport = () => {
+    state.drag = null;
+    riClearSelectionStyle(frame);
+  };
+
+  exportButtons.forEach((button) => {
+    button.addEventListener(
+      "click",
+      handleExport,
+      true
+    );
+  });
+
+  state.cleanup = () => {
+    if (svg) {
+      svg.removeEventListener(
+        "pointerdown",
+        handlePointerDown
       );
-
-      if (!card) {
-        return;
-      }
-
-      state.selectedCardIndex = Number(
-        card.dataset.radarCardIndex
+      svg.removeEventListener(
+        "pointermove",
+        handlePointerMove
       );
-
-      renderWorkspace();
-      riApplySelectionStyle(
-        frame,
-        data,
-        state
+      svg.removeEventListener(
+        "pointerup",
+        finishDrag
+      );
+      svg.removeEventListener(
+        "pointercancel",
+        finishDrag
+      );
+      svg.removeEventListener(
+        "click",
+        handleSvgClick
       );
     }
-  );
+
+    doc.removeEventListener(
+      "pointerup",
+      finishDrag
+    );
+    doc.removeEventListener(
+      "pointercancel",
+      finishDrag
+    );
+    doc.removeEventListener(
+      "click",
+      handleDocumentClick
+    );
+
+    exportButtons.forEach((button) => {
+      button.removeEventListener(
+        "click",
+        handleExport,
+        true
+      );
+    });
+
+    if (state.boundDocument === doc) {
+      state.boundDocument = null;
+    }
+  };
 }
 
 function riAddMetric(
@@ -1630,10 +1853,16 @@ function riBuildValueEditor({
     color
   );
 
-  const update = (rawValue) => {
+  const commitValue = (rawValue) => {
+    const parsed = riOptionalNumber(rawValue);
+
+    if (parsed === null) {
+      return false;
+    }
+
     const value = Math.round(
       riClamp(
-        riNumber(rawValue, 0),
+        parsed,
         0,
         data.maxValue
       )
@@ -1652,14 +1881,22 @@ function riBuildValueEditor({
       index,
       data
     );
+
+    return true;
   };
 
   number.addEventListener("input", () => {
-    update(number.value);
+    commitValue(number.value);
+  });
+
+  number.addEventListener("blur", () => {
+    if (!commitValue(number.value)) {
+      number.value = String(metric[teamKey]);
+    }
   });
 
   range.addEventListener("input", () => {
-    update(range.value);
+    commitValue(range.value);
   });
 
   wrapper.appendChild(head);
@@ -2409,35 +2646,48 @@ function riBuildSettingsDetails({
     "ri-details-body"
   );
 
+  const commitScale = (rawValue, input) => {
+    const parsed = riOptionalNumber(rawValue);
+
+    if (parsed === null) {
+      input.value = String(data.maxValue);
+      return;
+    }
+
+    const nextMax = Math.max(
+      1,
+      Math.round(parsed)
+    );
+
+    data.maxValue = nextMax;
+
+    data.metrics.forEach((metric) => {
+      metric.home = riClamp(
+        metric.home,
+        0,
+        nextMax
+      );
+      metric.away = riClamp(
+        metric.away,
+        0,
+        nextMax
+      );
+    });
+
+    rerender(false);
+    renderWorkspace();
+  };
+
   body.appendChild(
     riField({
       label: "Valor máximo da escala",
       value: data.maxValue,
       type: "number",
-      onInput: (rawValue) => {
-        const nextMax = Math.max(
-          1,
-          Math.round(
-            riNumber(rawValue, data.maxValue)
-          )
-        );
-
-        data.maxValue = nextMax;
-
-        data.metrics.forEach((metric) => {
-          metric.home = riClamp(
-            metric.home,
-            0,
-            nextMax
-          );
-          metric.away = riClamp(
-            metric.away,
-            0,
-            nextMax
-          );
-        });
-
-        rerender(false);
+      onChange: commitScale,
+      onBlur: (rawValue, input) => {
+        if (riOptionalNumber(rawValue) === null) {
+          input.value = String(data.maxValue);
+        }
       }
     })
   );
@@ -2651,5 +2901,10 @@ buildInspector = function buildInspectorWithRadarMode(
     return;
   }
 
+  const radarState = radarEditorStates.get(
+    args.frame
+  );
+
+  radarState?.cleanup?.();
   radarBaseBuildInspector(args);
 };

@@ -279,8 +279,13 @@ function pcDrawRadar(svg, data, radar) {
 
   svg.dataset.radarId = radar.id;
 
-  if (!metrics.length) {
-    pcDrawEmptyRadar(svg, "Adicione métricas a este radar");
+  if (metrics.length < 3) {
+    pcDrawEmptyRadar(
+      svg,
+      metrics.length
+        ? "Adicione pelo menos 3 métricas"
+        : "Adicione métricas a este radar"
+    );
     return;
   }
 

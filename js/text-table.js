@@ -19,6 +19,25 @@ function tbSetText(id, value) {
   }
 }
 
+function tbIsRecord(value) {
+  return Boolean(
+    value &&
+    typeof value === "object" &&
+    !Array.isArray(value)
+  );
+}
+
+function tbCreateUniqueId(prefix, usedIds) {
+  let id = tbUid(prefix);
+
+  while (usedIds.has(id)) {
+    id = tbUid(prefix);
+  }
+
+  usedIds.add(id);
+  return id;
+}
+
 function tbNormalizeData(data) {
   data.kicker ??= "Tabela comparativa";
   data.title ??= "Tabela de dados";
@@ -30,23 +49,60 @@ function tbNormalizeData(data) {
   data.noteText ??= "";
   data.source ??= "";
 
-  data.columns = tbSafeArray(data.columns);
-  data.rows = tbSafeArray(data.rows);
+  data.columns = tbSafeArray(data.columns).filter(tbIsRecord);
+  data.rows = tbSafeArray(data.rows).filter(tbIsRecord);
+
+  const usedColumnIds = new Set();
+  const columnIdMigrations = [];
 
   data.columns.forEach((column, index) => {
-    column.id ||= tbUid(`col-${index + 1}`);
+    const previousId = String(column.id ?? "").trim();
+    let nextId = previousId;
+
+    if (!nextId || usedColumnIds.has(nextId)) {
+      nextId = tbCreateUniqueId(`col-${index + 1}`, usedColumnIds);
+    } else {
+      usedColumnIds.add(nextId);
+    }
+
+    if (previousId && previousId !== nextId) {
+      columnIdMigrations.push({
+        from: previousId,
+        to: nextId
+      });
+    }
+
+    column.id = nextId;
     column.label ??= `Coluna ${index + 1}`;
   });
 
   const validColumnIds = new Set(
     data.columns.map((column) => column.id)
   );
+  const usedRowIds = new Set();
 
   data.rows.forEach((row, index) => {
-    row.id ||= tbUid(`row-${index + 1}`);
-    row.cells = row.cells && typeof row.cells === "object"
+    const previousRowId = String(row.id ?? "").trim();
+
+    if (!previousRowId || usedRowIds.has(previousRowId)) {
+      row.id = tbCreateUniqueId(`row-${index + 1}`, usedRowIds);
+    } else {
+      row.id = previousRowId;
+      usedRowIds.add(previousRowId);
+    }
+
+    row.cells = tbIsRecord(row.cells)
       ? row.cells
       : {};
+
+    columnIdMigrations.forEach(({ from, to }) => {
+      if (
+        Object.prototype.hasOwnProperty.call(row.cells, from) &&
+        !Object.prototype.hasOwnProperty.call(row.cells, to)
+      ) {
+        row.cells[to] = row.cells[from];
+      }
+    });
 
     Object.keys(row.cells).forEach((columnId) => {
       if (!validColumnIds.has(columnId)) {

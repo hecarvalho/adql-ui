@@ -11,6 +11,7 @@ editorSchemas["text-table"] = {
 
 const tableBuilderBaseBuildInspector = buildInspector;
 const tableBuilderEditorStates = new WeakMap();
+let tableBuilderActiveFrame = null;
 
 function tbiElement(tag, className = "", text = "") {
   const element = document.createElement(tag);
@@ -51,6 +52,9 @@ function tbiGetState(frame) {
       openColumns: {},
       openRows: {},
       boundDocument: null,
+      frameClickHandler: null,
+      exportOwnerDocument: null,
+      exportCaptureHandler: null,
       renderWorkspace: null,
       rerender: null
     };
@@ -547,8 +551,8 @@ function tbiRerenderComponent(win, schema, data) {
   }
 }
 
-function tbiApplySelectionStyle(frame, state) {
-  const doc = frame.contentDocument;
+function tbiClearSelectionStyle(frame) {
+  const doc = frame?.contentDocument;
 
   if (!doc) {
     return;
@@ -557,26 +561,113 @@ function tbiApplySelectionStyle(frame, state) {
   doc
     .querySelectorAll(".is-editor-selected")
     .forEach((element) => element.classList.remove("is-editor-selected"));
+}
+
+function tbiEscapeSelectorValue(value) {
+  const rawValue = String(value ?? "");
+
+  if (globalThis.CSS?.escape) {
+    return CSS.escape(rawValue);
+  }
+
+  return rawValue.replace(/[\"']/g, "\\$&");
+}
+
+function tbiApplySelectionStyle(frame, state) {
+  const doc = frame.contentDocument;
+
+  if (!doc) {
+    return;
+  }
+
+  tbiClearSelectionStyle(frame);
 
   if (state.selectedRowId) {
     doc
-      .querySelectorAll(`[data-tb-row-id="${CSS.escape(state.selectedRowId)}"]`)
+      .querySelectorAll(
+        `[data-tb-row-id="${tbiEscapeSelectorValue(state.selectedRowId)}"]`
+      )
       .forEach((element) => element.classList.add("is-editor-selected"));
   }
 
   if (state.selectedColumnId) {
     doc
-      .querySelectorAll(`[data-tb-column-id="${CSS.escape(state.selectedColumnId)}"]`)
+      .querySelectorAll(
+        `[data-tb-column-id="${tbiEscapeSelectorValue(state.selectedColumnId)}"]`
+      )
       .forEach((element) => element.classList.add("is-editor-selected"));
   }
 
   if (state.selectedRowId && state.selectedCellColumnId) {
     const cell = doc.querySelector(
-      `[data-tb-row-id="${CSS.escape(state.selectedRowId)}"][data-tb-column-id="${CSS.escape(state.selectedCellColumnId)}"]`
+      `[data-tb-row-id="${tbiEscapeSelectorValue(state.selectedRowId)}"][data-tb-column-id="${tbiEscapeSelectorValue(state.selectedCellColumnId)}"]`
     );
 
     cell?.classList.add("is-editor-selected");
   }
+}
+
+function tbiCleanupFrameEvents(frame, state) {
+  if (state?.boundDocument && state.frameClickHandler) {
+    state.boundDocument.removeEventListener(
+      "click",
+      state.frameClickHandler
+    );
+  }
+
+  if (state?.exportOwnerDocument && state.exportCaptureHandler) {
+    state.exportOwnerDocument.removeEventListener(
+      "click",
+      state.exportCaptureHandler,
+      true
+    );
+  }
+
+  tbiClearSelectionStyle(frame);
+
+  if (state) {
+    state.boundDocument = null;
+    state.frameClickHandler = null;
+    state.exportOwnerDocument = null;
+    state.exportCaptureHandler = null;
+  }
+}
+
+function tbiAttachExportCleanup({ frame, state }) {
+  const ownerDocument = frame.ownerDocument || document;
+
+  if (
+    state.exportOwnerDocument === ownerDocument &&
+    state.exportCaptureHandler
+  ) {
+    return;
+  }
+
+  if (state.exportOwnerDocument && state.exportCaptureHandler) {
+    state.exportOwnerDocument.removeEventListener(
+      "click",
+      state.exportCaptureHandler,
+      true
+    );
+  }
+
+  state.exportOwnerDocument = ownerDocument;
+  state.exportCaptureHandler = (event) => {
+    const target = event.target;
+    const exportButton = target?.closest?.(
+      "#exportDataBtn, #exportHtmlBtn, #exportPngBtn"
+    );
+
+    if (exportButton) {
+      tbiClearSelectionStyle(frame);
+    }
+  };
+
+  ownerDocument.addEventListener(
+    "click",
+    state.exportCaptureHandler,
+    true
+  );
 }
 
 function tbiCreateColumn(data) {
@@ -1127,17 +1218,31 @@ function tbiBuildTextCard({ data, rerender }) {
   return card;
 }
 
-function tbiAttachFrameEvents({ frame, data, state, renderWorkspace }) {
+function tbiAttachFrameEvents({ frame, state, renderWorkspace }) {
   const doc = frame.contentDocument;
 
-  if (!doc || state.boundDocument === doc) {
+  if (!doc) {
     return;
   }
 
-  state.boundDocument = doc;
+  if (state.boundDocument === doc && state.frameClickHandler) {
+    tbiAttachExportCleanup({ frame, state });
+    return;
+  }
 
-  doc.addEventListener("click", (event) => {
-    const cell = event.target.closest("td[data-tb-row-id][data-tb-column-id]");
+  if (state.boundDocument && state.frameClickHandler) {
+    state.boundDocument.removeEventListener(
+      "click",
+      state.frameClickHandler
+    );
+  }
+
+  state.boundDocument = doc;
+  state.frameClickHandler = (event) => {
+    const target = event.target;
+    const cell = target?.closest?.(
+      "td[data-tb-row-id][data-tb-column-id]"
+    );
 
     if (cell) {
       state.selectedRowId = cell.dataset.tbRowId;
@@ -1151,17 +1256,22 @@ function tbiAttachFrameEvents({ frame, data, state, renderWorkspace }) {
       return;
     }
 
-    const header = event.target.closest("th[data-tb-column-id]");
+    const header = target?.closest?.("th[data-tb-column-id]");
 
     if (header) {
       state.selectedColumnId = header.dataset.tbColumnId;
+      state.selectedRowId = null;
+      state.selectedCellColumnId = null;
       state.openSections.structure = true;
       state.openSections.columns = true;
       state.openColumns[state.selectedColumnId] = true;
       renderWorkspace();
       tbiApplySelectionStyle(frame, state);
     }
-  });
+  };
+
+  doc.addEventListener("click", state.frameClickHandler);
+  tbiAttachExportCleanup({ frame, state });
 }
 
 function buildAdvancedTableBuilderInspector({
@@ -1188,16 +1298,25 @@ function buildAdvancedTableBuilderInspector({
 
   const state = tbiGetState(frame);
 
-  if (!data.columns.some((column) => column.id === state.selectedColumnId)) {
-    state.selectedColumnId = data.columns[0]?.id ?? null;
+  if (
+    state.selectedColumnId !== null &&
+    !data.columns.some((column) => column.id === state.selectedColumnId)
+  ) {
+    state.selectedColumnId = null;
   }
 
-  if (!data.rows.some((row) => row.id === state.selectedRowId)) {
-    state.selectedRowId = data.rows[0]?.id ?? null;
+  if (
+    state.selectedRowId !== null &&
+    !data.rows.some((row) => row.id === state.selectedRowId)
+  ) {
+    state.selectedRowId = null;
   }
 
-  if (!data.columns.some((column) => column.id === state.selectedCellColumnId)) {
-    state.selectedCellColumnId = data.columns[0]?.id ?? null;
+  if (
+    state.selectedCellColumnId !== null &&
+    !data.columns.some((column) => column.id === state.selectedCellColumnId)
+  ) {
+    state.selectedCellColumnId = null;
   }
 
   const workspace = tbiElement("div", "tbi-shell");
@@ -1263,9 +1382,10 @@ function buildAdvancedTableBuilderInspector({
   state.renderWorkspace = renderWorkspace;
   state.rerender = rerender;
 
+  tableBuilderActiveFrame = frame;
+
   tbiAttachFrameEvents({
     frame,
-    data,
     state,
     renderWorkspace
   });
@@ -1276,8 +1396,26 @@ function buildAdvancedTableBuilderInspector({
 
 buildInspector = function buildInspectorWithTableBuilderMode(args) {
   if (args.schema.mode === "table-builder-advanced") {
+    if (
+      tableBuilderActiveFrame &&
+      tableBuilderActiveFrame !== args.frame
+    ) {
+      tbiCleanupFrameEvents(
+        tableBuilderActiveFrame,
+        tbiGetState(tableBuilderActiveFrame)
+      );
+    }
+
     buildAdvancedTableBuilderInspector(args);
     return;
+  }
+
+  if (tableBuilderActiveFrame) {
+    tbiCleanupFrameEvents(
+      tableBuilderActiveFrame,
+      tbiGetState(tableBuilderActiveFrame)
+    );
+    tableBuilderActiveFrame = null;
   }
 
   tableBuilderBaseBuildInspector(args);

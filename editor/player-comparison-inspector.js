@@ -35,6 +35,17 @@ function pciNumber(value, fallback = 0) {
   return Number.isFinite(parsed) ? parsed : fallback;
 }
 
+function pciParseNumber(value) {
+  const normalized = String(value ?? "").trim().replace(",", ".");
+
+  if (!normalized) {
+    return null;
+  }
+
+  const parsed = Number(normalized);
+  return Number.isFinite(parsed) ? parsed : null;
+}
+
 function pciUid(prefix) {
   return `${prefix}-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 7)}`;
 }
@@ -60,7 +71,8 @@ function pciGetState(frame) {
       drag: null,
       boundDocument: null,
       renderWorkspace: null,
-      rerender: null
+      rerender: null,
+      cleanup: null
     };
 
     playerComparisonEditorStates.set(frame, state);
@@ -112,6 +124,8 @@ function pciField({
   max,
   step,
   onInput,
+  onChange,
+  onBlur,
   className = ""
 }) {
   const wrapper = pciElement("label", `pci-field ${className}`.trim());
@@ -128,6 +142,14 @@ function pciField({
 
   input.addEventListener("input", () => {
     onInput?.(input.value, input);
+  });
+
+  input.addEventListener("change", () => {
+    onChange?.(input.value, input);
+  });
+
+  input.addEventListener("blur", () => {
+    onBlur?.(input.value, input);
   });
 
   wrapper.appendChild(input);
@@ -1279,35 +1301,75 @@ function pciBuildPlayerValueRows({ win, data, metric, maxValue, step, decimals, 
     const head = pciElement("div", "pci-value-head");
     head.appendChild(pciElement("strong", "", player.name));
 
+    const currentValue = () =>
+      pciClamp(pciNumber(metric.values?.[player.id], 0), 0, maxValue);
+
+    const normalizeValue = (rawValue) => {
+      const parsed = pciParseNumber(rawValue);
+
+      if (parsed === null) {
+        return null;
+      }
+
+      const clamped = pciClamp(parsed, 0, maxValue);
+      return decimals === 0
+        ? Math.round(clamped)
+        : Number(clamped.toFixed(decimals));
+    };
+
     const numberInput = document.createElement("input");
     numberInput.type = "number";
     numberInput.min = "0";
     numberInput.max = String(maxValue);
     numberInput.step = String(step);
-    numberInput.value = pciNumber(metric.values?.[player.id], 0);
+    numberInput.value = String(currentValue());
 
     const rangeInput = document.createElement("input");
     rangeInput.type = "range";
     rangeInput.min = "0";
     rangeInput.max = String(maxValue);
     rangeInput.step = String(step);
-    rangeInput.value = pciNumber(metric.values?.[player.id], 0);
+    rangeInput.value = String(currentValue());
 
-    const update = (rawValue, source) => {
-      const value = pciClamp(pciNumber(rawValue, 0), 0, maxValue);
-      metric.values[player.id] =
-        decimals === 0 ? Math.round(value) : Number(value.toFixed(decimals));
-      numberInput.value = String(metric.values[player.id]);
-      rangeInput.value = String(metric.values[player.id]);
+    const applyValue = (value) => {
+      metric.values ||= {};
+      metric.values[player.id] = value;
+      rangeInput.value = String(value);
       rerender(false);
-
-      if (source === numberInput) {
-        source.value = String(metric.values[player.id]);
-      }
     };
 
-    numberInput.addEventListener("input", () => update(numberInput.value, numberInput));
-    rangeInput.addEventListener("input", () => update(rangeInput.value, rangeInput));
+    numberInput.addEventListener("input", () => {
+      const value = normalizeValue(numberInput.value);
+
+      if (value === null) {
+        return;
+      }
+
+      applyValue(value);
+    });
+
+    numberInput.addEventListener("change", () => {
+      const value = normalizeValue(numberInput.value);
+
+      if (value === null) {
+        numberInput.value = String(currentValue());
+        return;
+      }
+
+      applyValue(value);
+      numberInput.value = String(value);
+    });
+
+    rangeInput.addEventListener("input", () => {
+      const value = normalizeValue(rangeInput.value);
+
+      if (value === null) {
+        return;
+      }
+
+      applyValue(value);
+      numberInput.value = String(value);
+    });
 
     head.appendChild(numberInput);
     row.appendChild(head);
@@ -1439,12 +1501,25 @@ function pciBuildRadarCard({ win, data, state, rerender, renderWorkspace }) {
       type: "number",
       min: 1,
       step: 1,
-      onInput: (value) => {
-        const oldMax = Math.max(1, pciNumber(selectedRadar.maxValue, 100));
-        const nextMax = Math.max(1, pciNumber(value, oldMax));
-        const ratio = nextMax / oldMax;
+      onChange: (value, input) => {
+        const parsed = pciParseNumber(value);
 
+        if (parsed === null || parsed < 1) {
+          input.value = String(selectedRadar.maxValue);
+          return;
+        }
+
+        const oldMax = Math.max(1, pciNumber(selectedRadar.maxValue, 100));
+        const nextMax = Math.max(1, Math.round(parsed));
+
+        if (nextMax === oldMax) {
+          input.value = String(oldMax);
+          return;
+        }
+
+        const ratio = nextMax / oldMax;
         selectedRadar.maxValue = nextMax;
+
         selectedRadar.metrics.forEach((metric) => {
           Object.keys(metric.values || {}).forEach((playerId) => {
             metric.values[playerId] = pciClamp(
@@ -1455,6 +1530,7 @@ function pciBuildRadarCard({ win, data, state, rerender, renderWorkspace }) {
           });
         });
 
+        input.value = String(nextMax);
         rerender(true);
       }
     })
@@ -1747,8 +1823,16 @@ function pciBuildBarsCard({ win, data, state, rerender, renderWorkspace }) {
       type: "number",
       min: 0.0001,
       step: 0.1,
-      onInput: (value) => {
-        selected.maxValue = Math.max(0.0001, pciNumber(value, 1));
+      onChange: (value, input) => {
+        const parsed = pciParseNumber(value);
+
+        if (parsed === null || parsed <= 0) {
+          input.value = String(selected.maxValue);
+          return;
+        }
+
+        selected.maxValue = Math.max(0.0001, parsed);
+        input.value = String(selected.maxValue);
         rerender(false);
       }
     })
@@ -1763,8 +1847,16 @@ function pciBuildBarsCard({ win, data, state, rerender, renderWorkspace }) {
       min: 0,
       max: 3,
       step: 1,
-      onInput: (value) => {
-        selected.decimals = pciClamp(Math.round(pciNumber(value, 1)), 0, 3);
+      onChange: (value, input) => {
+        const parsed = pciParseNumber(value);
+
+        if (parsed === null) {
+          input.value = String(selected.decimals);
+          return;
+        }
+
+        selected.decimals = pciClamp(Math.round(parsed), 0, 3);
+        input.value = String(selected.decimals);
         rerender(false);
       }
     })
@@ -1900,7 +1992,25 @@ function pciBuildBarsCard({ win, data, state, rerender, renderWorkspace }) {
         min: 0,
         step: selected.decimals === 0 ? 1 : 1 / 10 ** selected.decimals,
         onInput: (value) => {
-          entry.value = Math.max(0, pciNumber(value, 0));
+          const parsed = pciParseNumber(value);
+
+          if (parsed === null) {
+            return;
+          }
+
+          entry.value = Math.max(0, parsed);
+          rerender(false);
+        },
+        onChange: (value, input) => {
+          const parsed = pciParseNumber(value);
+
+          if (parsed === null) {
+            input.value = String(entry.value);
+            return;
+          }
+
+          entry.value = Math.max(0, parsed);
+          input.value = String(entry.value);
           rerender(false);
         }
       })
@@ -2080,23 +2190,59 @@ function pciBuildTextDetails({ data, rerender, state }) {
   return details;
 }
 
-function pciApplySelectionStyle(frame, state) {
+function pciResetSelectionStyle(frame, data) {
   const doc = frame.contentDocument;
 
   if (!doc) {
     return;
   }
 
-  doc.querySelectorAll("[data-player-id]").forEach((element) => {
-    const isSelected = element.dataset.playerId === state.selectedPlayerId;
+  doc.querySelectorAll(".pc-player-chip.is-selected").forEach((chip) => {
+    chip.classList.remove("is-selected");
+  });
 
-    if (element.classList.contains("pc-player-chip")) {
-      element.classList.toggle("is-selected", isSelected);
-    }
+  doc.querySelectorAll(".pc-radar-card.is-selected").forEach((card) => {
+    card.classList.remove("is-selected");
+  });
 
-    if (element.classList.contains("pc-radar-node")) {
-      element.setAttribute("r", isSelected ? "10" : "7.5");
-      element.setAttribute("stroke-width", isSelected ? "5" : "3.4");
+  doc.querySelectorAll(".pc-bar-card.is-selected").forEach((card) => {
+    card.classList.remove("is-selected");
+  });
+
+  doc.querySelectorAll(".pc-radar-label[data-radar-metric-id]").forEach((label) => {
+    label.removeAttribute("fill");
+  });
+
+  doc.querySelectorAll(".pc-radar-node[data-player-id]").forEach((node) => {
+    const player = data.players.find((item) => item.id === node.dataset.playerId);
+    node.setAttribute("r", player?.team === "B" ? "7" : "7.5");
+    node.setAttribute("stroke-width", "3.4");
+  });
+}
+
+function pciClearSelectionStyle(frame, data) {
+  pciResetSelectionStyle(frame, data);
+}
+
+function pciApplySelectionStyle(frame, data, state) {
+  const doc = frame.contentDocument;
+
+  if (!doc) {
+    return;
+  }
+
+  pciResetSelectionStyle(frame, data);
+
+  doc.querySelectorAll(".pc-player-chip[data-player-id]").forEach((chip) => {
+    chip.classList.toggle("is-selected", chip.dataset.playerId === state.selectedPlayerId);
+  });
+
+  doc.querySelectorAll(".pc-radar-node[data-player-id]").forEach((node) => {
+    const isSelected = node.dataset.playerId === state.selectedPlayerId;
+
+    if (isSelected) {
+      node.setAttribute("r", "10");
+      node.setAttribute("stroke-width", "5");
     }
   });
 
@@ -2109,7 +2255,9 @@ function pciApplySelectionStyle(frame, state) {
       label.dataset.radarId === state.selectedRadarId &&
       label.dataset.radarMetricId === state.selectedRadarMetricId;
 
-    label.setAttribute("fill", isSelected ? "#C58B12" : "#071F3D");
+    if (isSelected) {
+      label.setAttribute("fill", "#C58B12");
+    }
   });
 
   doc.querySelectorAll(".pc-bar-card[data-bar-metric-id]").forEach((card) => {
@@ -2187,14 +2335,17 @@ function pciUpdateRadarDrag({ frame, data, state, event, rerender }) {
 
 function pciAttachFrameEvents({ frame, data, state, rerender, renderWorkspace }) {
   const doc = frame.contentDocument;
+  const win = frame.contentWindow;
 
-  if (!doc || state.boundDocument === doc) {
+  if (!doc) {
     return;
   }
 
+  state.cleanup?.();
+  state.cleanup = null;
   state.boundDocument = doc;
 
-  doc.addEventListener("click", (event) => {
+  const handleClick = (event) => {
     const radarNode = event.target.closest?.(
       ".pc-radar-node[data-radar-id][data-player-id][data-radar-metric-id]"
     );
@@ -2205,7 +2356,7 @@ function pciAttachFrameEvents({ frame, data, state, rerender, renderWorkspace })
       state.selectedRadarId = radarNode.dataset.radarId;
       state.selectedRadarMetricId = radarNode.dataset.radarMetricId;
       renderWorkspace();
-      pciApplySelectionStyle(frame, state);
+      pciApplySelectionStyle(frame, data, state);
       return;
     }
 
@@ -2216,7 +2367,7 @@ function pciAttachFrameEvents({ frame, data, state, rerender, renderWorkspace })
       state.selectedRadarId = metricTarget.dataset.radarId;
       state.selectedRadarMetricId = metricTarget.dataset.radarMetricId;
       renderWorkspace();
-      pciApplySelectionStyle(frame, state);
+      pciApplySelectionStyle(frame, data, state);
       return;
     }
 
@@ -2232,7 +2383,7 @@ function pciAttachFrameEvents({ frame, data, state, rerender, renderWorkspace })
       }
 
       renderWorkspace();
-      pciApplySelectionStyle(frame, state);
+      pciApplySelectionStyle(frame, data, state);
       return;
     }
 
@@ -2242,21 +2393,33 @@ function pciAttachFrameEvents({ frame, data, state, rerender, renderWorkspace })
       state.openSections.players = true;
       state.selectedPlayerId = playerTarget.dataset.playerId;
       renderWorkspace();
-      pciApplySelectionStyle(frame, state);
+      pciApplySelectionStyle(frame, data, state);
       return;
     }
 
-    const barTarget = event.target.closest?.("[data-bar-metric-id]");
+    const barEntryTarget = event.target.closest?.(".pc-bar-row[data-bar-entry-id]");
+    const barCardTarget = event.target.closest?.(".pc-bar-card[data-bar-metric-id]");
 
-    if (barTarget?.dataset.barMetricId) {
+    if (barEntryTarget?.dataset.barEntryId && barCardTarget?.dataset.barMetricId) {
       state.openSections.bars = true;
-      state.selectedBarMetricId = barTarget.dataset.barMetricId;
+      state.selectedBarMetricId = barCardTarget.dataset.barMetricId;
+      state.selectedBarEntryId = barEntryTarget.dataset.barEntryId;
+      state.openBarEntries ||= {};
+      state.openBarEntries[state.selectedBarEntryId] = true;
       renderWorkspace();
-      pciApplySelectionStyle(frame, state);
+      pciApplySelectionStyle(frame, data, state);
+      return;
     }
-  });
 
-  doc.addEventListener("pointerdown", (event) => {
+    if (barCardTarget?.dataset.barMetricId) {
+      state.openSections.bars = true;
+      state.selectedBarMetricId = barCardTarget.dataset.barMetricId;
+      renderWorkspace();
+      pciApplySelectionStyle(frame, data, state);
+    }
+  };
+
+  const handlePointerDown = (event) => {
     const node = event.target.closest?.(
       ".pc-radar-node[data-radar-id][data-player-id][data-radar-metric-id]"
     );
@@ -2277,17 +2440,17 @@ function pciAttachFrameEvents({ frame, data, state, rerender, renderWorkspace })
     };
 
     renderWorkspace();
-    pciApplySelectionStyle(frame, state);
-  });
+    pciApplySelectionStyle(frame, data, state);
+  };
 
-  doc.addEventListener("pointermove", (event) => {
+  const handlePointerMove = (event) => {
     if (!state.drag) {
       return;
     }
 
     event.preventDefault();
     pciUpdateRadarDrag({ frame, data, state, event, rerender });
-  });
+  };
 
   const finishDrag = () => {
     if (!state.drag) {
@@ -2296,15 +2459,59 @@ function pciAttachFrameEvents({ frame, data, state, rerender, renderWorkspace })
 
     state.drag = null;
     renderWorkspace();
-    pciApplySelectionStyle(frame, state);
+    pciApplySelectionStyle(frame, data, state);
   };
 
+  const handleRendered = () => {
+    requestAnimationFrame(() => pciApplySelectionStyle(frame, data, state));
+  };
+
+  doc.addEventListener("click", handleClick);
+  doc.addEventListener("pointerdown", handlePointerDown);
+  doc.addEventListener("pointermove", handlePointerMove);
   doc.addEventListener("pointerup", finishDrag);
   doc.addEventListener("pointercancel", finishDrag);
+  win.addEventListener("pointerup", finishDrag);
+  win.addEventListener("blur", finishDrag);
+  win.addEventListener("adql:player-comparison-rendered", handleRendered);
 
-  frame.contentWindow.addEventListener("adql:player-comparison-rendered", () => {
-    requestAnimationFrame(() => pciApplySelectionStyle(frame, state));
+  const exportButtons = [
+    "exportDataBtn",
+    "exportHtmlBtn",
+    "exportPngBtn"
+  ]
+    .map((id) => document.getElementById(id))
+    .filter(Boolean);
+
+  const handleExport = () => {
+    state.drag = null;
+    pciClearSelectionStyle(frame, data);
+  };
+
+  exportButtons.forEach((button) => {
+    button.addEventListener("click", handleExport, true);
   });
+
+  state.cleanup = () => {
+    doc.removeEventListener("click", handleClick);
+    doc.removeEventListener("pointerdown", handlePointerDown);
+    doc.removeEventListener("pointermove", handlePointerMove);
+    doc.removeEventListener("pointerup", finishDrag);
+    doc.removeEventListener("pointercancel", finishDrag);
+    win.removeEventListener("pointerup", finishDrag);
+    win.removeEventListener("blur", finishDrag);
+    win.removeEventListener("adql:player-comparison-rendered", handleRendered);
+
+    exportButtons.forEach((button) => {
+      button.removeEventListener("click", handleExport, true);
+    });
+
+    state.drag = null;
+
+    if (state.boundDocument === doc) {
+      state.boundDocument = null;
+    }
+  };
 }
 
 function buildAdvancedPlayerComparisonInspector({
@@ -2364,7 +2571,7 @@ function buildAdvancedPlayerComparisonInspector({
     pciRerenderComponent(win, schema, data);
 
     requestAnimationFrame(() => {
-      pciApplySelectionStyle(frame, state);
+      pciApplySelectionStyle(frame, data, state);
     });
 
     if (!refreshWorkspace) {
@@ -2451,7 +2658,7 @@ function buildAdvancedPlayerComparisonInspector({
     workspace.appendChild(pciBuildTextDetails({ data, rerender, state }));
 
     requestAnimationFrame(() => {
-      pciApplySelectionStyle(frame, state);
+      pciApplySelectionStyle(frame, data, state);
     });
   };
 
@@ -2470,5 +2677,7 @@ buildInspector = function buildInspectorWithPlayerComparisonMode(args) {
     return;
   }
 
+  const playerComparisonState = playerComparisonEditorStates.get(args.frame);
+  playerComparisonState?.cleanup?.();
   playerComparisonBaseBuildInspector(args);
 };
