@@ -1,12 +1,25 @@
 const playData = {
+  kicker: "Campo tático",
   title: "Atrair por fora, atacar por dentro",
-
   subtitle: "França × Marrocos • Quartas de final",
-
   reading:
     "A equipe atrai a pressão no corredor lateral, conecta por dentro e acelera no espaço antes da recomposição defensiva.",
-
   source: "Vídeo-análise • Dados próprios",
+
+  stepCopy: [
+    {
+      title: "Atrair",
+      text: "Fixar a pressão no corredor lateral."
+    },
+    {
+      title: "Conectar",
+      text: "Encontrar o apoio por dentro."
+    },
+    {
+      title: "Acelerar",
+      text: "Atacar o espaço livre no lado oposto."
+    }
+  ],
 
   players: [
     { id: "p1", x: 150, y: 420, type: "team" },
@@ -14,7 +27,6 @@ const playData = {
     { id: "p3", x: 462, y: 292, type: "highlight" },
     { id: "p4", x: 632, y: 222, type: "team" },
     { id: "p5", x: 785, y: 135, type: "team" },
-
     { id: "o1", x: 225, y: 230, type: "opponent" },
     { id: "o2", x: 395, y: 215, type: "opponent" },
     { id: "o3", x: 570, y: 312, type: "opponent" },
@@ -36,12 +48,17 @@ const playData = {
   ],
 
   carries: [
-    { path: "M462 292 C520 250, 575 236, 632 222" }
+    {
+      from: "p3",
+      to: "p4",
+      control1: { x: 58, y: -42 },
+      control2: { x: -57, y: 14 }
+    }
   ],
 
   pressures: [
-    { x: 225, y: 230, r: 32 },
-    { x: 395, y: 215, r: 30 }
+    { playerId: "o1", r: 32 },
+    { playerId: "o2", r: 30 }
   ],
 
   gates: [
@@ -49,8 +66,10 @@ const playData = {
   ],
 
   steps: [
-    { x: 150, y: 420, number: 1 },
-    { x: 462, y: 292, number: 2 },
-    { x: 785, y: 135, number: 3 }
+    { playerId: "p1", number: 1 },
+    { playerId: "p3", number: 2 },
+    { playerId: "p5", number: 3 }
   ]
 };
+
+window.playData = playData;
