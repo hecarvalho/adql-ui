@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ADQL UI — Player Comparison</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Barlow+Semi+Condensed:wght@500;600;700;800;900&family=Inter:wght@400;500;600;700;800&display=swap"
+    rel="stylesheet"
+  />
+
+  <link rel="stylesheet" href="../css/core/core.css" />
+  <link rel="stylesheet" href="../css/components/player-comparison.css" />
+</head>
+<body>
+  <main class="adql-canvas">
+    <section class="pc-poster">
+      <div class="pc-background" aria-hidden="true">
+        <div class="pc-dot-grid pc-dot-grid-top"></div>
+        <div class="pc-dot-grid pc-dot-grid-bottom"></div>
+      </div>
+
+      <header class="pc-header">
+        <div>
+          <p id="pcKicker" class="pc-kicker">Player comparison</p>
+          <h1 id="pcTitle" class="pc-title">Comparação de jogadores</h1>
+          <p id="pcSubtitle" class="pc-subtitle">Perfis ofensivos • Temporada 2025/26</p>
+        </div>
+
+        <div class="pc-index">
+          <span>ADQL UI</span>
+          <strong id="pcCode">C-05</strong>
+        </div>
+      </header>
+
+      <section class="pc-player-strip" aria-label="Jogadores comparados">
+        <div class="pc-team-group">
+          <div class="pc-team-label">
+            <span class="pc-team-dot pc-team-dot-a"></span>
+            <strong id="pcTeamAName">Time A</strong>
+          </div>
+          <div id="pcTeamAPlayers" class="pc-player-chips"></div>
+        </div>
+
+        <div class="pc-team-divider" aria-hidden="true"></div>
+
+        <div class="pc-team-group pc-team-group-b">
+          <div class="pc-team-label">
+            <span class="pc-team-dot pc-team-dot-b"></span>
+            <strong id="pcTeamBName">Time B</strong>
+          </div>
+          <div id="pcTeamBPlayers" class="pc-player-chips"></div>
+        </div>
+      </section>
+
+      <section class="pc-main">
+        <div class="pc-chart-wrap">
+          <div class="pc-section-heading">
+            <div>
+              <span>Perfil multidimensional</span>
+              <h2>Radar comparativo</h2>
+            </div>
+            <p>Valores normalizados na mesma escala</p>
+          </div>
+
+          <svg
+            id="playerRadarSvg"
+            class="pc-radar"
+            viewBox="0 0 900 660"
+            aria-label="Radar comparativo entre jogadores"
+          ></svg>
+        </div>
+
+        <aside class="pc-side">
+          <span class="pc-side-label">Leitura</span>
+          <h2 id="pcReadingTitle">Perfis diferentes, impacto comparável</h2>
+          <p id="pcReadingText">
+            O radar mostra onde cada jogador concentra seu impacto. As barras ajudam a comparar métricas objetivas na mesma escala.
+          </p>
+
+          <div class="pc-key-point">
+            <span>Ponto-chave</span>
+            <p id="pcKeyText">
+              Use o radar para enxergar o perfil e as barras para quantificar diferenças específicas.
+            </p>
+          </div>
+        </aside>
+      </section>
+
+      <section class="pc-bars-section">
+        <div class="pc-bars-heading">
+          <div>
+            <span>Comparação direta</span>
+            <h2>Métricas em barras</h2>
+          </div>
+          <p>Uma linha por jogador, na mesma referência</p>
+        </div>
+
+        <div id="playerBarMetrics" class="pc-bar-metrics"></div>
+      </section>
+
+      <footer class="pc-footer">
+        <div>
+          <strong>Fonte</strong>
+          <span id="pcSourceText">Dados próprios • Modelo ADQL</span>
+        </div>
+
+        <div class="pc-footer-brand">
+          <strong>Além das quatro linhas</strong>
+          <span>Henrique Carvalho</span>
+        </div>
+      </footer>
+
+      <div class="pc-wave" aria-hidden="true"></div>
+      <div class="pc-wave-dots" aria-hidden="true"></div>
+    </section>
+  </main>
+
+  <script src="../data/player-comparison.js"></script>
+  <script src="../js/player-comparison.js"></script>
+</body>
+</html>

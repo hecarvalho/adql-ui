@@ -34,5 +34,14 @@ const componentsRegistry = [
     dataPath: "../data/france-morocco-radar.js",
     category: "Perfil",
     status: "finalizado"
+  },
+  {
+    id: "player-comparison",
+    name: "Player Comparison",
+    code: "C-05",
+    htmlPath: "../components/player-comparison.html",
+    dataPath: "../data/player-comparison.js",
+    category: "Jogadores",
+    status: "finalizado"
   }
 ];

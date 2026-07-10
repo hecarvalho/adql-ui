@@ -6,30 +6,24 @@ async function waitFonts(doc) {
   await doc.fonts.load('800 20px "Inter"');
   await doc.fonts.load('600 16px "Inter"');
   await doc.fonts.ready;
-
   await new Promise((resolve) => setTimeout(resolve, 500));
 }
 
 function downloadFile(filename, content, type = "text/plain") {
   const blob = new Blob([content], { type });
   const url = URL.createObjectURL(blob);
-
   const link = document.createElement("a");
   link.href = url;
   link.download = filename;
   link.click();
-
   URL.revokeObjectURL(url);
 }
 
 function exportDataFile(activeComponent, currentValues) {
   if (!activeComponent) return;
 
-  const variableName =
-    `${activeComponent.id.replaceAll("-", "_")}_draft`;
-
-  const fileContent =
-    `const ${variableName} = ${JSON.stringify(currentValues, null, 2)};`;
+  const variableName = `${activeComponent.id.replaceAll("-", "_")}_draft`;
+  const fileContent = `const ${variableName} = ${JSON.stringify(currentValues, null, 2)};`;
 
   downloadFile(
     `${activeComponent.id}-draft.js`,
@@ -42,7 +36,7 @@ function exportHtmlFile(activeComponent, frame) {
   if (!activeComponent) return;
 
   const doc = frame.contentDocument;
-  const html = "<!DOCTYPE html>\n" + doc.documentElement.outerHTML;
+  const html = `\n${doc.documentElement.outerHTML}`;
 
   downloadFile(
     `${activeComponent.id}-edited.html`,
@@ -57,6 +51,7 @@ function findPosterElement(doc) {
     doc.querySelector(".ic-poster") ||
     doc.querySelector(".tp-poster") ||
     doc.querySelector(".rp-poster") ||
+    doc.querySelector(".pc-poster") ||
     doc.querySelector(".adql-sheet")
   );
 }
@@ -108,12 +103,10 @@ async function exportPngFile(activeComponent, frame) {
       }
 
       const url = URL.createObjectURL(blob);
-
       const link = document.createElement("a");
       link.href = url;
       link.download = `${activeComponent.id}.png`;
       link.click();
-
       URL.revokeObjectURL(url);
     }, "image/png");
   } catch (error) {
