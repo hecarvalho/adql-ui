@@ -1,0 +1,86 @@
+{
+  "component": "C-06",
+  "schemaVersion": "adql.c06.table.v1",
+  "title": "Forma recente — Arsenal x Liverpool",
+  "subtitle": "Últimos 5 jogos por equipe",
+  "data": {
+    "columns": [
+      "Equipe",
+      "Jogos",
+      "V-E-D",
+      "Pontos",
+      "Gols",
+      "Saldo",
+      "Seq.",
+      "Chutes/J",
+      "Sofridos/J",
+      "No alvo/J"
+    ],
+    "rows": [
+      [
+        "Arsenal",
+        "5",
+        "4-1-0",
+        "13",
+        "9-4",
+        "5",
+        "W D W W W",
+        "14.6",
+        "10",
+        "5.6"
+      ],
+      [
+        "Liverpool",
+        "5",
+        "3-1-1",
+        "10",
+        "10-6",
+        "4",
+        "D L W W W",
+        "14.6",
+        "9.8",
+        "5.6"
+      ]
+    ],
+    "source": "Base fictícia local / ADQL Analytics Layer",
+    "rawMetrics": [
+      {
+        "team": "Arsenal",
+        "matches": 5,
+        "wins": 4,
+        "draws": 1,
+        "losses": 0,
+        "points": 13,
+        "goals_for": 9,
+        "goals_against": 4,
+        "goal_difference": 5,
+        "sequence": "W D W W W",
+        "shots_for_avg": 14.6,
+        "shots_against_avg": 10.0,
+        "shots_on_target_avg": 5.6
+      },
+      {
+        "team": "Liverpool",
+        "matches": 5,
+        "wins": 3,
+        "draws": 1,
+        "losses": 1,
+        "points": 10,
+        "goals_for": 10,
+        "goals_against": 6,
+        "goal_difference": 4,
+        "sequence": "D L W W W",
+        "shots_for_avg": 14.6,
+        "shots_against_avg": 9.8,
+        "shots_on_target_avg": 5.6
+      }
+    ],
+    "normalization": {
+      "type": "recent_form",
+      "lastN": 5,
+      "mode": "compare"
+    }
+  },
+  "description": "Tabela gerada a partir dos arquivos CSV do Football-Data.co.uk. Use como contexto de forma recente, casa/fora, resultados e odds, sempre cruzando com vídeo e leitura tática.",
+  "source": "Base fictícia local / ADQL Analytics Layer"
+}

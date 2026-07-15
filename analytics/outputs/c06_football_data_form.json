@@ -1,0 +1,95 @@
+{
+  "component": "C-06",
+  "schemaVersion": "adql.c06.table.v1",
+  "title": "Últimos 5 jogos — Arsenal",
+  "subtitle": "Forma recente com placar, volume de finalizações e odds de referência",
+  "data": {
+    "columns": [
+      "Data",
+      "Local",
+      "Adversário",
+      "Placar",
+      "Resultado",
+      "Chutes",
+      "No alvo",
+      "Odd vitória"
+    ],
+    "rows": [
+      [
+        "25/04/2026",
+        "Casa",
+        "Newcastle",
+        "1-0",
+        "Vitória",
+        "11",
+        "4",
+        "1.45"
+      ],
+      [
+        "02/05/2026",
+        "Casa",
+        "Fulham",
+        "3-0",
+        "Vitória",
+        "18",
+        "9",
+        "1.44"
+      ],
+      [
+        "10/05/2026",
+        "Fora",
+        "West Ham",
+        "1-0",
+        "Vitória",
+        "15",
+        "4",
+        "1.57"
+      ],
+      [
+        "18/05/2026",
+        "Casa",
+        "Burnley",
+        "1-0",
+        "Vitória",
+        "13",
+        "3",
+        "19"
+      ],
+      [
+        "24/05/2026",
+        "Fora",
+        "Crystal Palace",
+        "2-1",
+        "Vitória",
+        "17",
+        "7",
+        "1.75"
+      ]
+    ],
+    "source": "Football-Data.co.uk | E0 | 2526",
+    "rawMetrics": [
+      {
+        "team": "Arsenal",
+        "matches": 5,
+        "wins": 5,
+        "draws": 0,
+        "losses": 0,
+        "points": 15,
+        "goals_for": 8,
+        "goals_against": 1,
+        "goal_difference": 7,
+        "sequence": "W W W W W",
+        "shots_for_avg": 14.8,
+        "shots_against_avg": 9.0,
+        "shots_on_target_avg": 5.4
+      }
+    ],
+    "normalization": {
+      "type": "recent_form",
+      "lastN": 5,
+      "mode": "matches"
+    }
+  },
+  "description": "Tabela gerada a partir dos arquivos CSV do Football-Data.co.uk. Use como contexto de forma recente, casa/fora, resultados e odds, sempre cruzando com vídeo e leitura tática.",
+  "source": "Football-Data.co.uk | E0 | 2526"
+}
