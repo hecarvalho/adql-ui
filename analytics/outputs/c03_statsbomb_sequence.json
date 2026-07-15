@@ -1,0 +1,141 @@
+{
+  "schemaVersion": "adql.c03.scene.v1",
+  "coordinateSystem": "percent-0-100",
+  "kicker": "Campo tático",
+  "title": "Sequência de Argentina",
+  "subtitle": "StatsBomb Open Data → ADQL C-03",
+  "description": "Recorte de Argentina entre 04:38 e 04:40. A sequência contém 1 passe(s). Há 1 condução(ões) para progressão territorial. A posse termina em finalização com xG aproximado de 0.02.",
+  "reading": "Recorte de Argentina entre 04:38 e 04:40. A sequência contém 1 passe(s). Há 1 condução(ões) para progressão territorial. A posse termina em finalização com xG aproximado de 0.02.",
+  "source": "StatsBomb Open Data via statsbombpy | match_id=3869685",
+  "players": [
+    {
+      "id": "p01",
+      "label": "1",
+      "name": "Julián Álvarez",
+      "type": "team",
+      "x": 82.25,
+      "y": 24.75,
+      "role": "pass"
+    },
+    {
+      "id": "p101",
+      "label": "2",
+      "name": "Alexis Mac Allister",
+      "type": "team",
+      "x": 76.92,
+      "y": 26.88,
+      "role": "pass-reception"
+    },
+    {
+      "id": "p02",
+      "label": "3",
+      "name": "Alexis Mac Allister",
+      "type": "team",
+      "x": 76.92,
+      "y": 26.88,
+      "role": "carry"
+    },
+    {
+      "id": "p102",
+      "label": "4",
+      "name": "Alexis Mac Allister",
+      "type": "team",
+      "x": 77.0,
+      "y": 37.5,
+      "role": "carry-end"
+    },
+    {
+      "id": "p03",
+      "label": "5",
+      "name": "Alexis Mac Allister",
+      "type": "team",
+      "x": 77.0,
+      "y": 37.5,
+      "role": "shot"
+    },
+    {
+      "id": "p103",
+      "label": "G",
+      "name": "Alvo",
+      "type": "highlight",
+      "x": 97.75,
+      "y": 47.87,
+      "role": "shot-target"
+    }
+  ],
+  "actions": [
+    {
+      "type": "pass",
+      "from": "p01",
+      "to": "p101",
+      "bend": 0.12
+    },
+    {
+      "type": "carry",
+      "from": "p02",
+      "to": "p102",
+      "bend": -0.1
+    },
+    {
+      "type": "pass",
+      "from": "p03",
+      "to": "p103",
+      "bend": 0.05
+    }
+  ],
+  "zones": [
+    {
+      "x1": 71.92,
+      "y1": 18.75,
+      "x2": 100,
+      "y2": 53.87
+    }
+  ],
+  "pressures": [],
+  "gates": [
+    {
+      "x1": 96,
+      "y1": 43,
+      "x2": 100,
+      "y2": 57
+    }
+  ],
+  "steps": [
+    {
+      "playerId": "p01",
+      "number": 1
+    },
+    {
+      "playerId": "p101",
+      "number": 2
+    },
+    {
+      "playerId": "p02",
+      "number": 3
+    }
+  ],
+  "stepCopy": [
+    {
+      "title": "Origem",
+      "text": "Localizar o primeiro ponto de controle da posse e a orientação da equipe."
+    },
+    {
+      "title": "Progressão",
+      "text": "Acompanhar passes e conduções que movem a bola entre setores."
+    },
+    {
+      "title": "Finalização",
+      "text": "Avaliar a condição criada para o chute."
+    }
+  ],
+  "meta": {
+    "provider": "StatsBomb Open Data",
+    "attackingTeam": "Argentina",
+    "eventsCount": 3,
+    "eventTypes": {
+      "Pass": 1,
+      "Carry": 1,
+      "Shot": 1
+    }
+  }
+}

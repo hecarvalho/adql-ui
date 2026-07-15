@@ -1,0 +1,190 @@
+{
+  "schemaVersion": "adql.c03.scene.v1",
+  "coordinateSystem": "percent-0-100",
+  "kicker": "Campo tático",
+  "title": "Sequência de Brasil",
+  "subtitle": "StatsBomb Open Data → ADQL C-03",
+  "description": "Recorte de Brasil entre 10:12 e 10:22. A sequência contém 2 passe(s). Há 1 condução(ões) para progressão territorial. A posse termina em finalização com xG aproximado de 0.18.",
+  "reading": "Recorte de Brasil entre 10:12 e 10:22. A sequência contém 2 passe(s). Há 1 condução(ões) para progressão territorial. A posse termina em finalização com xG aproximado de 0.18.",
+  "source": "Base local fictícia / ADQL Analytics Layer",
+  "players": [
+    {
+      "id": "p01",
+      "label": "1",
+      "name": "Volante",
+      "type": "team",
+      "x": 35.0,
+      "y": 58.75,
+      "role": "ball recovery"
+    },
+    {
+      "id": "p02",
+      "label": "2",
+      "name": "Volante",
+      "type": "team",
+      "x": 37.5,
+      "y": 60.0,
+      "role": "pass"
+    },
+    {
+      "id": "p102",
+      "label": "3",
+      "name": "Meia direito",
+      "type": "team",
+      "x": 55.0,
+      "y": 72.5,
+      "role": "pass-reception"
+    },
+    {
+      "id": "p03",
+      "label": "4",
+      "name": "Meia direito",
+      "type": "team",
+      "x": 55.83,
+      "y": 72.5,
+      "role": "carry"
+    },
+    {
+      "id": "p103",
+      "label": "5",
+      "name": "Meia direito",
+      "type": "team",
+      "x": 70.0,
+      "y": 78.75,
+      "role": "carry-end"
+    },
+    {
+      "id": "o04",
+      "label": "P",
+      "name": "Lateral adversário",
+      "type": "opponent",
+      "x": 68.33,
+      "y": 76.25,
+      "role": "pressure"
+    },
+    {
+      "id": "p05",
+      "label": "6",
+      "name": "Meia direito",
+      "type": "team",
+      "x": 70.0,
+      "y": 78.75,
+      "role": "pass"
+    },
+    {
+      "id": "p105",
+      "label": "7",
+      "name": "Centroavante",
+      "type": "team",
+      "x": 85.0,
+      "y": 51.25,
+      "role": "pass-reception"
+    },
+    {
+      "id": "p06",
+      "label": "8",
+      "name": "Centroavante",
+      "type": "team",
+      "x": 85.0,
+      "y": 51.25,
+      "role": "shot"
+    },
+    {
+      "id": "p106",
+      "label": "G",
+      "name": "Alvo",
+      "type": "highlight",
+      "x": 100.0,
+      "y": 49.38,
+      "role": "shot-target"
+    }
+  ],
+  "actions": [
+    {
+      "type": "pass",
+      "from": "p02",
+      "to": "p102",
+      "bend": 0.12
+    },
+    {
+      "type": "carry",
+      "from": "p03",
+      "to": "p103",
+      "bend": -0.1
+    },
+    {
+      "type": "pass",
+      "from": "p05",
+      "to": "p105",
+      "bend": 0.12
+    },
+    {
+      "type": "pass",
+      "from": "p06",
+      "to": "p106",
+      "bend": 0.05
+    }
+  ],
+  "zones": [
+    {
+      "x1": 30.0,
+      "y1": 43.38,
+      "x2": 100,
+      "y2": 84.75
+    }
+  ],
+  "pressures": [
+    {
+      "playerId": "o04",
+      "r": 32
+    }
+  ],
+  "gates": [
+    {
+      "x1": 96,
+      "y1": 43,
+      "x2": 100,
+      "y2": 57
+    }
+  ],
+  "steps": [
+    {
+      "playerId": "p01",
+      "number": 1
+    },
+    {
+      "playerId": "p02",
+      "number": 2
+    },
+    {
+      "playerId": "p102",
+      "number": 3
+    }
+  ],
+  "stepCopy": [
+    {
+      "title": "Origem",
+      "text": "Localizar o primeiro ponto de controle da posse e a orientação da equipe."
+    },
+    {
+      "title": "Progressão",
+      "text": "Acompanhar passes e conduções que movem a bola entre setores."
+    },
+    {
+      "title": "Finalização",
+      "text": "Avaliar a condição criada para o chute."
+    }
+  ],
+  "meta": {
+    "provider": "StatsBomb Open Data",
+    "attackingTeam": "Brasil",
+    "eventsCount": 6,
+    "eventTypes": {
+      "Pass": 2,
+      "Ball Recovery": 1,
+      "Carry": 1,
+      "Pressure": 1,
+      "Shot": 1
+    }
+  }
+}
