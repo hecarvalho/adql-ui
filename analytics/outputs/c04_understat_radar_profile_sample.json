@@ -1,0 +1,95 @@
+{
+  "component": "C-04",
+  "schemaVersion": "adql.c04.radar.v1",
+  "title": "Perfil Understat — Bukayo Saka",
+  "subtitle": "Radar de percentis 0-100 | ENG-Premier League | 2025-2026",
+  "data": {
+    "entity": "Bukayo Saka · Arsenal",
+    "scaleMax": 100,
+    "metrics": [
+      {
+        "label": "Gols/90",
+        "value": 40.0,
+        "description": "Valor bruto: 0.547"
+      },
+      {
+        "label": "xG/90",
+        "value": 40.0,
+        "description": "Valor bruto: 0.538"
+      },
+      {
+        "label": "npxG/90",
+        "value": 40.0,
+        "description": "Valor bruto: 0.424"
+      },
+      {
+        "label": "xA/90",
+        "value": 80.0,
+        "description": "Valor bruto: 0.442"
+      },
+      {
+        "label": "Chutes/90",
+        "value": 40.0,
+        "description": "Valor bruto: 3.281"
+      },
+      {
+        "label": "KP/90",
+        "value": 80.0,
+        "description": "Valor bruto: 2.871"
+      },
+      {
+        "label": "xGChain/90",
+        "value": 60.0,
+        "description": "Valor bruto: 1.13"
+      },
+      {
+        "label": "xGBuildup/90",
+        "value": 80.0,
+        "description": "Valor bruto: 0.406"
+      },
+      {
+        "label": "Gols - xG",
+        "value": 20.0,
+        "description": "Valor bruto: 0.2"
+      }
+    ],
+    "source": "Base fictícia local / ADQL Analytics Layer",
+    "rawMetrics": {
+      "name": "Bukayo Saka",
+      "team": "Arsenal",
+      "position": "FW,MF",
+      "minutes90": 21.9,
+      "rawValues": {
+        "Gols/90": 0.547,
+        "xG/90": 0.538,
+        "npxG/90": 0.424,
+        "xA/90": 0.442,
+        "Chutes/90": 3.281,
+        "KP/90": 2.871,
+        "xGChain/90": 1.13,
+        "xGBuildup/90": 0.406,
+        "Gols - xG": 0.2
+      },
+      "percentiles": {
+        "Gols/90": 40.0,
+        "xG/90": 40.0,
+        "npxG/90": 40.0,
+        "xA/90": 80.0,
+        "Chutes/90": 40.0,
+        "KP/90": 80.0,
+        "xGChain/90": 60.0,
+        "xGBuildup/90": 80.0,
+        "Gols - xG": 20.0
+      },
+      "score": 53.3
+    },
+    "normalization": {
+      "type": "understat-player-season-percentile",
+      "scale": "0-100",
+      "min90s": 5.0,
+      "metricCount": 9
+    }
+  },
+  "description": "Radar gerado a partir de dados públicos do Understat. Use como apoio para leitura de volume, qualidade de chances, criação e participação na cadeia ofensiva. Os percentis foram calculados dentro da base filtrada por mínimo de 5.0 jogos de 90 minutos.",
+  "source": "Base fictícia local / ADQL Analytics Layer"
+}
