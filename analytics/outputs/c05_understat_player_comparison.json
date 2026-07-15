@@ -1,0 +1,121 @@
+{
+  "component": "C-05",
+  "schemaVersion": "adql.c05.player-comparison.v1",
+  "title": "Erling Haaland × Mohamed Salah",
+  "subtitle": "Percentis 0-100 | ENG-Premier League | 2025-2026",
+  "data": {
+    "scaleMax": 100,
+    "metrics": [
+      "Gols/90",
+      "xG/90",
+      "npxG/90",
+      "xA/90",
+      "Chutes/90",
+      "KP/90",
+      "xGChain/90",
+      "xGBuildup/90",
+      "Gols - xG"
+    ],
+    "players": [
+      {
+        "name": "Erling Haaland",
+        "team": "Manchester City",
+        "values": {
+          "Gols/90": 99.3,
+          "xG/90": 98.0,
+          "npxG/90": 97.8,
+          "xA/90": 80.4,
+          "Chutes/90": 95.0,
+          "KP/90": 54.9,
+          "xGChain/90": 95.5,
+          "xGBuildup/90": 36.5,
+          "Gols - xG": 9.1
+        }
+      },
+      {
+        "name": "Mohamed Salah",
+        "team": "Liverpool",
+        "values": {
+          "Gols/90": 88.3,
+          "xG/90": 86.8,
+          "npxG/90": 87.0,
+          "xA/90": 93.7,
+          "Chutes/90": 89.9,
+          "KP/90": 93.5,
+          "xGChain/90": 89.4,
+          "xGBuildup/90": 64.8,
+          "Gols - xG": 8.9
+        }
+      }
+    ],
+    "source": "Understat via soccerdata | ENG-Premier League | 2025-2026",
+    "rawMetrics": [
+      {
+        "name": "Erling Haaland",
+        "team": "Manchester City",
+        "position": "F S",
+        "minutes90": 33.1,
+        "rawValues": {
+          "Gols/90": 0.816,
+          "xG/90": 0.87,
+          "npxG/90": 0.778,
+          "xA/90": 0.166,
+          "Chutes/90": 3.776,
+          "KP/90": 0.755,
+          "xGChain/90": 0.989,
+          "xGBuildup/90": 0.156,
+          "Gols - xG": -1.795
+        },
+        "percentiles": {
+          "Gols/90": 99.3,
+          "xG/90": 98.0,
+          "npxG/90": 97.8,
+          "xA/90": 80.4,
+          "Chutes/90": 95.0,
+          "KP/90": 54.9,
+          "xGChain/90": 95.5,
+          "xGBuildup/90": 36.5,
+          "Gols - xG": 9.1
+        },
+        "score": 74.1
+      },
+      {
+        "name": "Mohamed Salah",
+        "team": "Liverpool",
+        "position": "F M S",
+        "minutes90": 24.0,
+        "rawValues": {
+          "Gols/90": 0.291,
+          "xG/90": 0.368,
+          "npxG/90": 0.336,
+          "xA/90": 0.267,
+          "Chutes/90": 2.788,
+          "KP/90": 2.039,
+          "xGChain/90": 0.723,
+          "xGBuildup/90": 0.262,
+          "Gols - xG": -1.838
+        },
+        "percentiles": {
+          "Gols/90": 88.3,
+          "xG/90": 86.8,
+          "npxG/90": 87.0,
+          "xA/90": 93.7,
+          "Chutes/90": 89.9,
+          "KP/90": 93.5,
+          "xGChain/90": 89.4,
+          "xGBuildup/90": 64.8,
+          "Gols - xG": 8.9
+        },
+        "score": 78.0
+      }
+    ],
+    "normalization": {
+      "type": "understat-player-season-percentile",
+      "scale": "0-100",
+      "min90s": 5.0,
+      "metricCount": 9
+    }
+  },
+  "description": "Comparação gerada a partir de dados públicos do Understat. Use como apoio para leitura de volume ofensivo, qualidade de chances, criação e participação na cadeia de xG. Os valores enviados ao C-05 são percentis 0-100 calculados dentro da base filtrada por mínimo de 5.0 jogos de 90 minutos.",
+  "source": "Understat via soccerdata | ENG-Premier League | 2025-2026"
+}
