@@ -1,0 +1,84 @@
+{
+  "component": "C-05",
+  "schemaVersion": "adql.c05.player-comparison.v1",
+  "title": "Bukayo Saka × Mohamed Salah",
+  "subtitle": "Percentis 0-100 | ENG-Premier League | 2025-2026",
+  "data": {
+    "scaleMax": 100,
+    "metrics": [
+      "Gols/90",
+      "Assistências/90",
+      "xG/90",
+      "xAG/90",
+      "Chutes/90",
+      "Progressão/90",
+      "Defesa/90"
+    ],
+    "players": [
+      {
+        "name": "Bukayo Saka",
+        "team": "Arsenal",
+        "values": {
+          "Gols/90": 50.0,
+          "Assistências/90": 75.0,
+          "xG/90": 50.0,
+          "xAG/90": 75.0,
+          "Chutes/90": 75.0,
+          "Progressão/90": 75.0,
+          "Defesa/90": 100
+        }
+      },
+      {
+        "name": "Mohamed Salah",
+        "team": "Liverpool",
+        "values": {
+          "Gols/90": 100,
+          "Assistências/90": 25.0,
+          "xG/90": 100,
+          "xAG/90": 25.0,
+          "Chutes/90": 100,
+          "Progressão/90": 25.0,
+          "Defesa/90": 25.0
+        }
+      }
+    ],
+    "source": "Base fictícia local / ADQL Analytics Layer",
+    "rawMetrics": [
+      {
+        "name": "Bukayo Saka",
+        "team": "Arsenal",
+        "minutes90": 27.4,
+        "rawValues": {
+          "Gols/90": 0.42,
+          "Assistências/90": 0.31,
+          "xG/90": 0.39,
+          "xAG/90": 0.34,
+          "Chutes/90": 3.12,
+          "Progressão/90": 9.781,
+          "Defesa/90": 1.642
+        }
+      },
+      {
+        "name": "Mohamed Salah",
+        "team": "Liverpool",
+        "minutes90": 31.2,
+        "rawValues": {
+          "Gols/90": 0.66,
+          "Assistências/90": 0.24,
+          "xG/90": 0.58,
+          "xAG/90": 0.25,
+          "Chutes/90": 3.64,
+          "Progressão/90": 6.731,
+          "Defesa/90": 0.929
+        }
+      }
+    ],
+    "normalization": {
+      "type": "percentile",
+      "scale": "0-100",
+      "min90s": 5.0
+    }
+  },
+  "description": "Comparação gerada a partir de estatísticas do FBref. Os valores enviados ao radar são percentis 0-100 calculados dentro da base filtrada por mínimo de 5.0 jogos de 90 minutos.",
+  "source": "Base fictícia local / ADQL Analytics Layer"
+}
