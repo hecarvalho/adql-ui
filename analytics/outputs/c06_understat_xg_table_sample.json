@@ -1,0 +1,227 @@
+{
+  "component": "C-06",
+  "schemaVersion": "adql.c06.table.v1",
+  "title": "Ranking Understat — xG/90",
+  "subtitle": "ENG-Premier League | 2025-2026 | mínimo: 5.0 jogos de 90 minutos",
+  "data": {
+    "columns": [
+      "#",
+      "Jogador",
+      "Equipe",
+      "Posição",
+      "90s",
+      "Gols/90",
+      "xG/90",
+      "xA/90",
+      "Chutes/90",
+      "KP/90",
+      "Gols - xG",
+      "Score"
+    ],
+    "rows": [
+      [
+        "1",
+        "Erling Haaland",
+        "Manchester City",
+        "FW",
+        "23.5",
+        "1.02",
+        "0.95",
+        "0.16",
+        "4.09",
+        "1.11",
+        "1.60",
+        "62"
+      ],
+      [
+        "2",
+        "Kylian Mbappe",
+        "Real Madrid",
+        "FW",
+        "26.4",
+        "0.87",
+        "0.75",
+        "0.20",
+        "3.93",
+        "1.59",
+        "3.20",
+        "62"
+      ],
+      [
+        "3",
+        "Mohamed Salah",
+        "Liverpool",
+        "FW",
+        "25.4",
+        "0.79",
+        "0.68",
+        "0.34",
+        "3.46",
+        "2.28",
+        "2.80",
+        "64"
+      ],
+      [
+        "4",
+        "Bukayo Saka",
+        "Arsenal",
+        "FW,MF",
+        "21.9",
+        "0.55",
+        "0.54",
+        "0.44",
+        "3.28",
+        "2.87",
+        "0.20",
+        "53"
+      ],
+      [
+        "5",
+        "Lamine Yamal",
+        "Barcelona",
+        "FW,MF",
+        "22.9",
+        "0.39",
+        "0.35",
+        "0.46",
+        "3.01",
+        "3.10",
+        "0.90",
+        "58"
+      ]
+    ],
+    "source": "Base fictícia local / ADQL Analytics Layer",
+    "rawMetrics": [
+      {
+        "rank": 1,
+        "name": "Erling Haaland",
+        "team": "Manchester City",
+        "position": "FW",
+        "minutes90": 23.5,
+        "rawValues": {
+          "Gols/90": 1.021,
+          "xG/90": 0.953,
+          "xA/90": 0.162,
+          "Chutes/90": 4.085,
+          "KP/90": 1.106,
+          "Gols - xG": 1.6
+        },
+        "percentiles": {
+          "Gols/90": 100.0,
+          "xG/90": 100.0,
+          "xA/90": 20.0,
+          "Chutes/90": 100.0,
+          "KP/90": 20.0,
+          "Gols - xG": 60.0
+        },
+        "score": 62.2
+      },
+      {
+        "rank": 2,
+        "name": "Kylian Mbappe",
+        "team": "Real Madrid",
+        "position": "FW",
+        "minutes90": 26.4,
+        "rawValues": {
+          "Gols/90": 0.87,
+          "xG/90": 0.749,
+          "xA/90": 0.204,
+          "Chutes/90": 3.933,
+          "KP/90": 1.588,
+          "Gols - xG": 3.2
+        },
+        "percentiles": {
+          "Gols/90": 80.0,
+          "xG/90": 80.0,
+          "xA/90": 40.0,
+          "Chutes/90": 80.0,
+          "KP/90": 40.0,
+          "Gols - xG": 100.0
+        },
+        "score": 62.2
+      },
+      {
+        "rank": 3,
+        "name": "Mohamed Salah",
+        "team": "Liverpool",
+        "position": "FW",
+        "minutes90": 25.4,
+        "rawValues": {
+          "Gols/90": 0.786,
+          "xG/90": 0.676,
+          "xA/90": 0.338,
+          "Chutes/90": 3.459,
+          "KP/90": 2.279,
+          "Gols - xG": 2.8
+        },
+        "percentiles": {
+          "Gols/90": 60.0,
+          "xG/90": 60.0,
+          "xA/90": 60.0,
+          "Chutes/90": 60.0,
+          "KP/90": 60.0,
+          "Gols - xG": 80.0
+        },
+        "score": 64.4
+      },
+      {
+        "rank": 4,
+        "name": "Bukayo Saka",
+        "team": "Arsenal",
+        "position": "FW,MF",
+        "minutes90": 21.9,
+        "rawValues": {
+          "Gols/90": 0.547,
+          "xG/90": 0.538,
+          "xA/90": 0.442,
+          "Chutes/90": 3.281,
+          "KP/90": 2.871,
+          "Gols - xG": 0.2
+        },
+        "percentiles": {
+          "Gols/90": 40.0,
+          "xG/90": 40.0,
+          "xA/90": 80.0,
+          "Chutes/90": 40.0,
+          "KP/90": 80.0,
+          "Gols - xG": 20.0
+        },
+        "score": 53.3
+      },
+      {
+        "rank": 5,
+        "name": "Lamine Yamal",
+        "team": "Barcelona",
+        "position": "FW,MF",
+        "minutes90": 22.9,
+        "rawValues": {
+          "Gols/90": 0.393,
+          "xG/90": 0.354,
+          "xA/90": 0.459,
+          "Chutes/90": 3.015,
+          "KP/90": 3.102,
+          "Gols - xG": 0.9
+        },
+        "percentiles": {
+          "Gols/90": 20.0,
+          "xG/90": 20.0,
+          "xA/90": 100.0,
+          "Chutes/90": 20.0,
+          "KP/90": 100.0,
+          "Gols - xG": 40.0
+        },
+        "score": 57.8
+      }
+    ],
+    "normalization": {
+      "type": "understat-player-season",
+      "scale": "raw/percentile",
+      "min90s": 5.0,
+      "displayValueType": "raw",
+      "sortMetric": "xG/90",
+      "sortMode": "raw"
+    }
+  },
+  "description": "Tabela gerada a partir de dados públicos do Understat. Use como apoio para leitura de volume, qualidade de chances e criação ofensiva.",
+  "source": "Base fictícia local / ADQL Analytics Layer"
+}

@@ -1,0 +1,417 @@
+{
+  "component": "C-06",
+  "schemaVersion": "adql.c06.table.v1",
+  "title": "Ranking Understat — xG/90",
+  "subtitle": "ENG-Premier League | 2025-2026 | mínimo: 5.0 jogos de 90 minutos",
+  "data": {
+    "columns": [
+      "#",
+      "Jogador",
+      "Equipe",
+      "Posição",
+      "90s",
+      "Gols/90",
+      "xG/90",
+      "xA/90",
+      "Chutes/90",
+      "KP/90",
+      "Gols - xG",
+      "Score"
+    ],
+    "rows": [
+      [
+        "1",
+        "Erling Haaland",
+        "Manchester City",
+        "F S",
+        "33.1",
+        "0.82",
+        "0.87",
+        "0.17",
+        "3.78",
+        "0.76",
+        "-1.80",
+        "74"
+      ],
+      [
+        "2",
+        "Kai Havertz",
+        "Arsenal",
+        "F M S",
+        "6.5",
+        "0.31",
+        "0.76",
+        "0.23",
+        "2.78",
+        "1.70",
+        "-2.90",
+        "74"
+      ],
+      [
+        "3",
+        "Donyell Malen",
+        "Aston Villa",
+        "F M S",
+        "6.7",
+        "0.60",
+        "0.71",
+        "0.06",
+        "3.90",
+        "1.05",
+        "-0.74",
+        "77"
+      ],
+      [
+        "4",
+        "Benjamin Sesko",
+        "Manchester United",
+        "F S",
+        "18.2",
+        "0.61",
+        "0.69",
+        "0.03",
+        "3.36",
+        "0.50",
+        "-1.50",
+        "65"
+      ],
+      [
+        "5",
+        "Lukas Nmecha",
+        "Leeds",
+        "F S",
+        "12.0",
+        "0.50",
+        "0.68",
+        "0.14",
+        "2.51",
+        "0.92",
+        "-2.14",
+        "69"
+      ],
+      [
+        "6",
+        "Thiago",
+        "Brentford",
+        "F S",
+        "36.6",
+        "0.60",
+        "0.67",
+        "0.09",
+        "2.30",
+        "0.66",
+        "-2.69",
+        "66"
+      ],
+      [
+        "7",
+        "Jean-Philippe Mateta",
+        "Crystal Palace",
+        "F S",
+        "24.7",
+        "0.49",
+        "0.65",
+        "0.05",
+        "2.55",
+        "0.36",
+        "-3.98",
+        "62"
+      ],
+      [
+        "8",
+        "Beto",
+        "Everton",
+        "F S",
+        "17.2",
+        "0.52",
+        "0.63",
+        "0.06",
+        "2.49",
+        "0.70",
+        "-1.95",
+        "65"
+      ],
+      [
+        "9",
+        "Dominic Calvert-Lewin",
+        "Leeds",
+        "F S",
+        "30.4",
+        "0.46",
+        "0.62",
+        "0.05",
+        "2.40",
+        "0.66",
+        "-4.67",
+        "63"
+      ],
+      [
+        "10",
+        "Joshua Zirkzee",
+        "Manchester United",
+        "F M S",
+        "6.4",
+        "0.31",
+        "0.60",
+        "0.19",
+        "3.93",
+        "1.73",
+        "-1.85",
+        "82"
+      ]
+    ],
+    "source": "Understat via soccerdata | ENG-Premier League | 2025-2026",
+    "rawMetrics": [
+      {
+        "rank": 1,
+        "name": "Erling Haaland",
+        "team": "Manchester City",
+        "position": "F S",
+        "minutes90": 33.1,
+        "rawValues": {
+          "Gols/90": 0.816,
+          "xG/90": 0.87,
+          "xA/90": 0.166,
+          "Chutes/90": 3.776,
+          "KP/90": 0.755,
+          "Gols - xG": -1.795
+        },
+        "percentiles": {
+          "Gols/90": 99.3,
+          "xG/90": 98.0,
+          "xA/90": 80.4,
+          "Chutes/90": 95.0,
+          "KP/90": 54.9,
+          "Gols - xG": 9.1
+        },
+        "score": 74.1
+      },
+      {
+        "rank": 2,
+        "name": "Kai Havertz",
+        "team": "Arsenal",
+        "position": "F M S",
+        "minutes90": 6.5,
+        "rawValues": {
+          "Gols/90": 0.309,
+          "xG/90": 0.757,
+          "xA/90": 0.225,
+          "Chutes/90": 2.784,
+          "KP/90": 1.701,
+          "Gols - xG": -2.896
+        },
+        "percentiles": {
+          "Gols/90": 89.2,
+          "xG/90": 97.6,
+          "xA/90": 89.0,
+          "Chutes/90": 89.8,
+          "KP/90": 88.3,
+          "Gols - xG": 3.2
+        },
+        "score": 74.2
+      },
+      {
+        "rank": 3,
+        "name": "Donyell Malen",
+        "team": "Aston Villa",
+        "position": "F M S",
+        "minutes90": 6.7,
+        "rawValues": {
+          "Gols/90": 0.6,
+          "xG/90": 0.711,
+          "xA/90": 0.055,
+          "Chutes/90": 3.9,
+          "KP/90": 1.05,
+          "Gols - xG": -0.739
+        },
+        "percentiles": {
+          "Gols/90": 96.8,
+          "xG/90": 97.2,
+          "xA/90": 45.8,
+          "Chutes/90": 95.7,
+          "KP/90": 69.1,
+          "Gols - xG": 26.6
+        },
+        "score": 77.4
+      },
+      {
+        "rank": 4,
+        "name": "Benjamin Sesko",
+        "team": "Manchester United",
+        "position": "F S",
+        "minutes90": 18.2,
+        "rawValues": {
+          "Gols/90": 0.605,
+          "xG/90": 0.688,
+          "xA/90": 0.033,
+          "Chutes/90": 3.356,
+          "KP/90": 0.495,
+          "Gols - xG": -1.504
+        },
+        "percentiles": {
+          "Gols/90": 97.4,
+          "xG/90": 97.0,
+          "xA/90": 34.8,
+          "Chutes/90": 93.9,
+          "KP/90": 41.3,
+          "Gols - xG": 12.1
+        },
+        "score": 64.8
+      },
+      {
+        "rank": 5,
+        "name": "Lukas Nmecha",
+        "team": "Leeds",
+        "position": "F S",
+        "minutes90": 12.0,
+        "rawValues": {
+          "Gols/90": 0.502,
+          "xG/90": 0.681,
+          "xA/90": 0.141,
+          "Chutes/90": 2.509,
+          "KP/90": 0.92,
+          "Gols - xG": -2.14
+        },
+        "percentiles": {
+          "Gols/90": 95.0,
+          "xG/90": 96.8,
+          "xA/90": 76.0,
+          "Chutes/90": 86.8,
+          "KP/90": 62.4,
+          "Gols - xG": 6.7
+        },
+        "score": 69.2
+      },
+      {
+        "rank": 6,
+        "name": "Thiago",
+        "team": "Brentford",
+        "position": "F S",
+        "minutes90": 36.6,
+        "rawValues": {
+          "Gols/90": 0.601,
+          "xG/90": 0.675,
+          "xA/90": 0.094,
+          "Chutes/90": 2.296,
+          "KP/90": 0.656,
+          "Gols - xG": -2.69
+        },
+        "percentiles": {
+          "Gols/90": 97.0,
+          "xG/90": 96.6,
+          "xA/90": 59.6,
+          "Chutes/90": 83.1,
+          "KP/90": 50.1,
+          "Gols - xG": 4.1
+        },
+        "score": 66.4
+      },
+      {
+        "rank": 7,
+        "name": "Jean-Philippe Mateta",
+        "team": "Crystal Palace",
+        "position": "F S",
+        "minutes90": 24.7,
+        "rawValues": {
+          "Gols/90": 0.485,
+          "xG/90": 0.646,
+          "xA/90": 0.051,
+          "Chutes/90": 2.548,
+          "KP/90": 0.364,
+          "Gols - xG": -3.977
+        },
+        "percentiles": {
+          "Gols/90": 94.4,
+          "xG/90": 96.3,
+          "xA/90": 44.1,
+          "Chutes/90": 87.2,
+          "KP/90": 34.8,
+          "Gols - xG": 1.3
+        },
+        "score": 61.7
+      },
+      {
+        "rank": 8,
+        "name": "Beto",
+        "team": "Everton",
+        "position": "F S",
+        "minutes90": 17.2,
+        "rawValues": {
+          "Gols/90": 0.522,
+          "xG/90": 0.635,
+          "xA/90": 0.058,
+          "Chutes/90": 2.494,
+          "KP/90": 0.696,
+          "Gols - xG": -1.948
+        },
+        "percentiles": {
+          "Gols/90": 95.7,
+          "xG/90": 95.7,
+          "xA/90": 47.1,
+          "Chutes/90": 86.6,
+          "KP/90": 53.1,
+          "Gols - xG": 7.3
+        },
+        "score": 64.7
+      },
+      {
+        "rank": 9,
+        "name": "Dominic Calvert-Lewin",
+        "team": "Leeds",
+        "position": "F S",
+        "minutes90": 30.4,
+        "rawValues": {
+          "Gols/90": 0.461,
+          "xG/90": 0.615,
+          "xA/90": 0.051,
+          "Chutes/90": 2.405,
+          "KP/90": 0.659,
+          "Gols - xG": -4.671
+        },
+        "percentiles": {
+          "Gols/90": 93.7,
+          "xG/90": 95.5,
+          "xA/90": 44.5,
+          "Chutes/90": 85.7,
+          "KP/90": 50.5,
+          "Gols - xG": 0.6
+        },
+        "score": 62.7
+      },
+      {
+        "rank": 10,
+        "name": "Joshua Zirkzee",
+        "team": "Manchester United",
+        "position": "F M S",
+        "minutes90": 6.4,
+        "rawValues": {
+          "Gols/90": 0.314,
+          "xG/90": 0.604,
+          "xA/90": 0.191,
+          "Chutes/90": 3.927,
+          "KP/90": 1.728,
+          "Gols - xG": -1.847
+        },
+        "percentiles": {
+          "Gols/90": 89.4,
+          "xG/90": 95.2,
+          "xA/90": 83.4,
+          "Chutes/90": 96.1,
+          "KP/90": 88.6,
+          "Gols - xG": 8.6
+        },
+        "score": 82.5
+      }
+    ],
+    "normalization": {
+      "type": "understat-player-season",
+      "scale": "raw/percentile",
+      "min90s": 5.0,
+      "displayValueType": "raw",
+      "sortMetric": "xG/90",
+      "sortMode": "raw"
+    }
+  },
+  "description": "Tabela gerada a partir de dados públicos do Understat. Use como apoio para leitura de volume, qualidade de chances e criação ofensiva.",
+  "source": "Understat via soccerdata | ENG-Premier League | 2025-2026"
+}
