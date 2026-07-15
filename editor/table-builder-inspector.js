@@ -51,6 +51,7 @@ function tbiGetState(frame) {
       },
       openColumns: {},
       openRows: {},
+      importStatus: null,
       boundDocument: null,
       frameClickHandler: null,
       exportOwnerDocument: null,
@@ -528,6 +529,39 @@ function ensureTableBuilderInspectorStyles() {
       font-size: 11px;
       line-height: 1.45;
       text-align: center;
+    }
+
+    .tbi-import-card {
+      border-color: rgba(7,31,61,.18);
+      background:
+        linear-gradient(180deg, rgba(7,31,61,.035), rgba(255,253,248,.92));
+    }
+
+    .tbi-import-card p {
+      margin: 0;
+      color: #747a82;
+      font-size: 11px;
+      line-height: 1.45;
+    }
+
+    .tbi-import-status {
+      padding: 10px 11px;
+      border-radius: 9px;
+      font-size: 11px;
+      font-weight: 800;
+      line-height: 1.35;
+    }
+
+    .tbi-import-status.is-ok {
+      border: 1px solid rgba(32,118,78,.22);
+      background: rgba(32,118,78,.08);
+      color: #1f704c;
+    }
+
+    .tbi-import-status.is-error {
+      border: 1px solid rgba(150,42,42,.22);
+      background: rgba(150,42,42,.08);
+      color: #8d2d2d;
     }
   `;
 
@@ -1218,6 +1252,285 @@ function tbiBuildTextCard({ data, rerender }) {
   return card;
 }
 
+function tbiReadFileAsText(file) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+
+    reader.addEventListener("load", () => {
+      resolve(String(reader.result ?? ""));
+    });
+
+    reader.addEventListener("error", () => {
+      reject(new Error("Não foi possível ler o arquivo selecionado."));
+    });
+
+    reader.readAsText(file, "utf-8");
+  });
+}
+
+function tbiCellToText(value) {
+  if (value === null || typeof value === "undefined") {
+    return "";
+  }
+
+  if (typeof value === "number") {
+    return Number.isFinite(value) ? String(value) : "";
+  }
+
+  if (typeof value === "boolean") {
+    return value ? "Sim" : "Não";
+  }
+
+  if (typeof value === "object") {
+    return JSON.stringify(value);
+  }
+
+  return String(value);
+}
+
+function tbiExtractAnalyticsTablePayload(payload) {
+  if (!payload || typeof payload !== "object") {
+    throw new Error("JSON inválido: o conteúdo precisa ser um objeto.");
+  }
+
+  const schemaVersion = String(payload.schemaVersion ?? "");
+  const component = String(payload.component ?? "").toUpperCase();
+
+  if (
+    schemaVersion &&
+    schemaVersion !== "adql.c06.table.v1" &&
+    component &&
+    component !== "C-06"
+  ) {
+    throw new Error("Este JSON não parece pertencer ao componente C-06.");
+  }
+
+  const tableData = payload.data?.columns && payload.data?.rows
+    ? payload.data
+    : payload.table?.columns && payload.table?.rows
+      ? payload.table
+      : payload.columns && payload.rows
+        ? payload
+        : null;
+
+  if (!tableData) {
+    throw new Error("JSON inválido: não encontrei data.columns e data.rows.");
+  }
+
+  const rawColumns = Array.isArray(tableData.columns)
+    ? tableData.columns
+    : [];
+
+  if (!rawColumns.length) {
+    throw new Error("JSON inválido: a tabela precisa ter pelo menos uma coluna.");
+  }
+
+  const columns = rawColumns.map((column, index) => {
+    if (column && typeof column === "object") {
+      const label = tbiCellToText(
+        column.label ?? column.header ?? column.name ?? column.title ?? column.key ?? column.id ?? `Coluna ${index + 1}`
+      );
+
+      const key = tbiCellToText(
+        column.key ?? column.id ?? column.field ?? column.accessor ?? label
+      );
+
+      return {
+        key: key || label || String(index),
+        label: label || `Coluna ${index + 1}`
+      };
+    }
+
+    const label = tbiCellToText(column) || `Coluna ${index + 1}`;
+
+    return {
+      key: label,
+      label
+    };
+  });
+
+  const rawRows = Array.isArray(tableData.rows)
+    ? tableData.rows
+    : [];
+
+  const rows = rawRows.map((row) => {
+    if (Array.isArray(row)) {
+      return columns.map((_, columnIndex) => tbiCellToText(row[columnIndex]));
+    }
+
+    if (row && typeof row === "object") {
+      const sourceCells = row.cells && typeof row.cells === "object"
+        ? row.cells
+        : row;
+
+      return columns.map((column, columnIndex) => {
+        const value = sourceCells[column.key]
+          ?? sourceCells[column.label]
+          ?? sourceCells[String(columnIndex)]
+          ?? sourceCells[columnIndex];
+
+        return tbiCellToText(value);
+      });
+    }
+
+    return columns.map((_, columnIndex) => (
+      columnIndex === 0 ? tbiCellToText(row) : ""
+    ));
+  });
+
+  return {
+    title: tbiCellToText(payload.title ?? tableData.title),
+    subtitle: tbiCellToText(payload.subtitle ?? tableData.subtitle),
+    source: tbiCellToText(payload.source ?? tableData.source),
+    columns,
+    rows
+  };
+}
+
+function tbiApplyAnalyticsTablePayload({ payload, data, state }) {
+  const table = tbiExtractAnalyticsTablePayload(payload);
+  const nextColumns = table.columns.map((column, index) => ({
+    id: tbiUid("col"),
+    label: column.label || `Coluna ${index + 1}`
+  }));
+
+  const nextRows = table.rows.map((rowValues) => {
+    const row = {
+      id: tbiUid("row"),
+      cells: {}
+    };
+
+    nextColumns.forEach((column, index) => {
+      row.cells[column.id] = rowValues[index] ?? "";
+    });
+
+    return row;
+  });
+
+  data.columns = nextColumns;
+  data.rows = nextRows;
+
+  if (table.title) {
+    data.title = table.title;
+    data.sectionTitle = table.title;
+  }
+
+  if (table.subtitle) {
+    data.subtitle = table.subtitle;
+    data.sectionText = table.subtitle;
+  }
+
+  if (table.source) {
+    data.source = table.source;
+  }
+
+  if (!data.kicker) {
+    data.kicker = "ADQL • Dados";
+  }
+
+  if (!data.sectionLabel) {
+    data.sectionLabel = "Tabela";
+  }
+
+  state.selectedColumnId = nextColumns[0]?.id ?? null;
+  state.selectedRowId = nextRows[0]?.id ?? null;
+  state.selectedCellColumnId = nextColumns[0]?.id ?? null;
+  state.openSections.structure = true;
+  state.openSections.columns = false;
+  state.openSections.rows = true;
+  state.openSections.text = false;
+  state.openColumns = {};
+  state.openRows = {};
+
+  if (state.selectedRowId) {
+    state.openRows[state.selectedRowId] = true;
+  }
+
+  return table;
+}
+
+function tbiBuildAnalyticsImportCard({ data, state, rerender, renderWorkspace }) {
+  const { card, head } = tbiSectionCard("Importar JSON", "Analytics Layer");
+  card.classList.add("tbi-import-card");
+
+  head.appendChild(
+    tbiElement("span", "tbi-count", "JSON")
+  );
+
+  card.appendChild(
+    tbiElement(
+      "p",
+      "",
+      "Carregue um arquivo gerado em analytics/outputs, como c06_table_example.json. A tabela atual será substituída pelos dados importados."
+    )
+  );
+
+  if (state.importStatus?.message) {
+    card.appendChild(
+      tbiElement(
+        "div",
+        `tbi-import-status ${state.importStatus.type === "error" ? "is-error" : "is-ok"}`,
+        state.importStatus.message
+      )
+    );
+  }
+
+  const input = document.createElement("input");
+  input.type = "file";
+  input.accept = ".json,application/json";
+  input.hidden = true;
+
+  input.addEventListener("change", async () => {
+    const file = input.files?.[0];
+    input.value = "";
+
+    if (!file) {
+      return;
+    }
+
+    if (
+      (data.columns.length || data.rows.length) &&
+      !window.confirm("Substituir a tabela atual pelos dados do JSON selecionado?")
+    ) {
+      return;
+    }
+
+    try {
+      const content = await tbiReadFileAsText(file);
+      const payload = JSON.parse(content);
+      const table = tbiApplyAnalyticsTablePayload({ payload, data, state });
+
+      state.importStatus = {
+        type: "ok",
+        message: `Importado: ${table.columns.length} colunas × ${table.rows.length} linhas.`
+      };
+
+      rerender(true);
+    } catch (error) {
+      state.importStatus = {
+        type: "error",
+        message: error?.message || "Não foi possível importar o JSON."
+      };
+
+      renderWorkspace();
+    }
+  });
+
+  card.appendChild(input);
+
+  card.appendChild(
+    tbiButton({
+      label: "Selecionar JSON",
+      icon: "↑",
+      onClick: () => {
+        input.click();
+      }
+    })
+  );
+
+  return card;
+}
+
 function tbiAttachFrameEvents({ frame, state, renderWorkspace }) {
   const doc = frame.contentDocument;
 
@@ -1339,6 +1652,10 @@ function buildAdvancedTableBuilderInspector({
 
     workspace.appendChild(
       tbiBuildHero({ data, state, rerender, renderWorkspace })
+    );
+
+    workspace.appendChild(
+      tbiBuildAnalyticsImportCard({ data, state, rerender, renderWorkspace })
     );
 
     const selectedCellCard = tbiBuildSelectedCellCard({

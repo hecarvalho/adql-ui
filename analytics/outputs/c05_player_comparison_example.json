@@ -1,0 +1,37 @@
+{
+  "component": "C-05",
+  "schemaVersion": "adql.c05.player-comparison.v1",
+  "title": "Comparação entre jogadores",
+  "subtitle": "Exemplo de saída para ADQL C-05",
+  "data": {
+    "scaleMax": 100,
+    "metrics": [
+      "Criação",
+      "Finalização",
+      "Progressão",
+      "Defesa"
+    ],
+    "players": [
+      {
+        "name": "Jogador A",
+        "team": "Time A",
+        "values": {
+          "Criação": 84.0,
+          "Finalização": 70.0,
+          "Progressão": 76.0,
+          "Defesa": 42.0
+        }
+      },
+      {
+        "name": "Jogador B",
+        "team": "Time B",
+        "values": {
+          "Criação": 71.0,
+          "Finalização": 81.0,
+          "Progressão": 63.0,
+          "Defesa": 55.0
+        }
+      }
+    ]
+  }
+}

@@ -1,0 +1,41 @@
+{
+  "cache_dir": "cache",
+  "output_dir": "outputs",
+  "sources": {
+    "fbref": {
+      "enabled": true,
+      "provider": "soccerdata",
+      "purpose": "estatisticas de jogadores e equipes"
+    },
+    "understat": {
+      "enabled": true,
+      "provider": "soccerdata",
+      "purpose": "xG, xA e finalizacoes"
+    },
+    "clubelo": {
+      "enabled": true,
+      "provider": "soccerdata",
+      "purpose": "forca relativa de equipes"
+    },
+    "football_data_co_uk": {
+      "enabled": true,
+      "provider": "csv",
+      "purpose": "resultados, estatisticas basicas e odds historicas"
+    },
+    "football_data_org": {
+      "enabled": true,
+      "provider": "api",
+      "purpose": "calendario, resultados, classificacao e artilheiros"
+    },
+    "statsbomb_open": {
+      "enabled": true,
+      "provider": "statsbombpy",
+      "purpose": "eventos avancados abertos"
+    },
+    "thesportsdb": {
+      "enabled": true,
+      "provider": "api",
+      "purpose": "metadados, eventos, equipes e imagens"
+    }
+  }
+}

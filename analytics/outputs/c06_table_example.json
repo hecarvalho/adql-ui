@@ -1,0 +1,31 @@
+{
+  "component": "C-06",
+  "schemaVersion": "adql.c06.table.v1",
+  "title": "Comparação estatística",
+  "subtitle": "Exemplo de saída para ADQL C-06",
+  "data": {
+    "columns": [
+      "Equipe",
+      "Finalizações",
+      "xG",
+      "Posse %",
+      "Pressão"
+    ],
+    "rows": [
+      [
+        "Brasil",
+        12.4,
+        2.1,
+        58,
+        "Alta"
+      ],
+      [
+        "Japão",
+        9.7,
+        1.4,
+        51,
+        "Média"
+      ]
+    ]
+  }
+}
