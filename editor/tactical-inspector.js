@@ -7,6 +7,13 @@ editorSchemas["tactical-pitch"] = {
 const baseBuildInspector = buildInspector;
 const tacticalEditorStates = new WeakMap();
 
+const TACTICAL_DRAG_BOUNDS = {
+  minX: 72,
+  maxX: 928,
+  minY: 72,
+  maxY: 548
+};
+
 const TACTICAL_ROUTE_TOOLS = {
   "add-pass": {
     label: "Passe",
@@ -28,7 +35,7 @@ const TACTICAL_ROUTE_TOOLS = {
 const TACTICAL_PLAYER_TYPES = [
   {
     value: "team",
-    label: "Equipe"
+    label: "Time"
   },
   {
     value: "opponent",
@@ -318,21 +325,27 @@ function ensureTacticalInspectorStyles() {
     }
 
     .ti-type-dot-team {
+      border-color: #071f3d;
       background: #071f3d;
+      box-shadow: 0 0 0 2px rgba(7,31,61,.10);
     }
 
     .ti-type-dot-opponent {
-      background: #fff;
+      border-color: #a63a32;
+      background: #c84a3f;
+      box-shadow: 0 0 0 2px rgba(200,74,63,.12);
     }
 
     .ti-type-dot-highlight {
-      border-color: #c58b12;
-      background: #c58b12;
+      border-color: #8f6410;
+      background: #d6a11e;
+      box-shadow: 0 0 0 2px rgba(214,161,30,.16);
     }
 
     .ti-type-dot-ghost {
-      opacity: .45;
-      background: #a8afb6;
+      border-color: #7a8794;
+      background: #c8d0d8;
+      box-shadow: 0 0 0 2px rgba(122,135,148,.10);
     }
 
     .ti-inline-field {
@@ -931,6 +944,12 @@ function tacticalGetState(frame) {
       playerDraftType: "team",
       playerDraftNumber: "",
       statusMessage: "",
+      aiPrompt: "circulação lenta → bola para o lado → cruzamento contra uma defesa organizada",
+      aiJson: "",
+      aiStatus: "",
+      aiEndpoint: localStorage.getItem("adqlC03AiEndpoint") || "",
+      aiReplaceScene: true,
+      aiAccordionOpen: true,
       cleanup: null,
       renderWorkspace: null
     };
@@ -1184,6 +1203,1151 @@ function tacticalTypeSelector({
   });
 
   return grid;
+}
+
+
+function ensureTacticalAIStyles() {
+  if (
+    document.getElementById(
+      "tacticalAIInspectorStyles"
+    )
+  ) {
+    return;
+  }
+
+  const style = document.createElement("style");
+
+  style.id = "tacticalAIInspectorStyles";
+  style.textContent = `
+    .ti-ai-card {
+      border-color: rgba(197,139,18,.38);
+      background:
+        radial-gradient(circle at 96% 0%, rgba(197,139,18,.14), transparent 30%),
+        #fffdf8;
+    }
+
+    .ti-ai-head-copy {
+      display: grid;
+      gap: 3px;
+    }
+
+    .ti-ai-head-copy small {
+      color: #7b8188;
+      font-size: 10px;
+      font-weight: 700;
+      line-height: 1.35;
+    }
+
+    .ti-ai-textarea {
+      width: 100%;
+      min-height: 96px;
+      margin-top: 12px;
+      padding: 11px;
+      border: 1px solid #d8d1c3;
+      border-radius: 10px;
+      background: #fff;
+      color: #071f3d;
+      font-family: Inter, Arial, sans-serif;
+      font-size: 12px;
+      font-weight: 600;
+      line-height: 1.5;
+      resize: vertical;
+      outline: none;
+    }
+
+    .ti-ai-textarea:focus {
+      border-color: #c58b12;
+      box-shadow: 0 0 0 3px rgba(197,139,18,.11);
+    }
+
+    .ti-ai-actions {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 8px;
+      margin-top: 10px;
+    }
+
+    .ti-ai-actions .ti-button {
+      min-height: 40px;
+    }
+
+    .ti-ai-actions .ti-button-primary {
+      grid-column: 1 / -1;
+    }
+
+    .ti-ai-status {
+      margin-top: 10px;
+      padding: 10px 11px;
+      border-left: 3px solid #c58b12;
+      background: rgba(197,139,18,.07);
+      color: #6f675b;
+      font-size: 11px;
+      line-height: 1.45;
+    }
+
+    .ti-ai-status.is-error {
+      border-left-color: #9f3131;
+      background: rgba(159,49,49,.06);
+      color: #8a2f2f;
+    }
+
+    .ti-ai-option-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      margin-top: 10px;
+      padding: 10px 11px;
+      border: 1px solid #e3dccf;
+      border-radius: 10px;
+      background: #fff;
+      color: #071f3d;
+      font-size: 11px;
+      font-weight: 800;
+    }
+
+    .ti-ai-option-row input[type="checkbox"] {
+      accent-color: #c58b12;
+    }
+
+    .ti-ai-endpoint {
+      margin-top: 10px;
+    }
+
+    .ti-ai-endpoint input {
+      width: 100%;
+      height: 38px;
+      padding: 0 10px;
+      border: 1px solid #d8d1c3;
+      border-radius: 9px;
+      background: #fff;
+      color: #071f3d;
+      font-family: Inter, Arial, sans-serif;
+      font-size: 11px;
+      font-weight: 700;
+      outline: none;
+    }
+
+    .ti-ai-endpoint input:focus {
+      border-color: #c58b12;
+    }
+
+    .ti-ai-preview {
+      margin-top: 10px;
+      max-height: 180px;
+      overflow: auto;
+      padding: 10px;
+      border: 1px solid #e3dccf;
+      border-radius: 10px;
+      background: #f7f2e8;
+      color: #071f3d;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      font-size: 10px;
+      line-height: 1.45;
+      white-space: pre-wrap;
+    }
+  `;
+
+  document.head.appendChild(style);
+}
+
+const TACTICAL_AI_SCHEMA_VERSION = "adql.c03.scene.v1";
+
+const TACTICAL_AI_EMPTY_ARRAY_KEYS = [
+  "players",
+  "passes",
+  "runs",
+  "carries",
+  "zones",
+  "pressures",
+  "gates",
+  "steps"
+];
+
+function tacticalAISafeText(value, fallback = "") {
+  const normalized = String(value ?? "").trim();
+
+  return normalized || fallback;
+}
+
+function tacticalAIClamp(value, min, max) {
+  const parsed = Number(value);
+
+  if (!Number.isFinite(parsed)) {
+    return min;
+  }
+
+  return Math.min(Math.max(parsed, min), max);
+}
+
+function tacticalAISide(prompt) {
+  const text = String(prompt ?? "").toLowerCase();
+
+  if (
+    text.includes("lado esquerdo") ||
+    text.includes("pela esquerda") ||
+    text.includes("corredor esquerdo") ||
+    text.includes("esquerda")
+  ) {
+    return "left";
+  }
+
+  return "right";
+}
+
+function tacticalAICreatePlayer(id, x, y, type, number = null) {
+  return {
+    id,
+    x: tacticalAIClamp(
+      Math.round(x),
+      TACTICAL_DRAG_BOUNDS.minX,
+      TACTICAL_DRAG_BOUNDS.maxX
+    ),
+    y: tacticalAIClamp(
+      Math.round(y),
+      TACTICAL_DRAG_BOUNDS.minY,
+      TACTICAL_DRAG_BOUNDS.maxY
+    ),
+    type,
+    number
+  };
+}
+
+function tacticalAIMirrorX(x, side) {
+  if (side !== "left") {
+    return x;
+  }
+
+  return 1000 - x;
+}
+
+function tacticalAIMirroredPlayer(id, x, y, type, number, side) {
+  return tacticalAICreatePlayer(
+    id,
+    tacticalAIMirrorX(x, side),
+    y,
+    type,
+    number
+  );
+}
+
+function tacticalAIBuildCrossingScene(prompt) {
+  const side = tacticalAISide(prompt);
+  const isLeft = side === "left";
+  const sideLabel = isLeft ? "esquerdo" : "direito";
+  const title = `Circulação pelo lado ${sideLabel}`;
+
+  const players = [
+    tacticalAIMirroredPlayer("p1", 170, 410, "team", "4", side),
+    tacticalAIMirroredPlayer("p2", 310, 392, "team", "6", side),
+    tacticalAIMirroredPlayer("p3", 455, 420, "highlight", "2", side),
+    tacticalAIMirroredPlayer("p4", 655, 468, "team", "7", side),
+    tacticalAIMirroredPlayer("p5", 810, 282, "highlight", "9", side),
+    tacticalAIMirroredPlayer("p6", 705, 348, "team", "10", side),
+    tacticalAIMirroredPlayer("o1", 620, 250, "opponent", "5", side),
+    tacticalAIMirroredPlayer("o2", 725, 270, "opponent", "4", side),
+    tacticalAIMirroredPlayer("o3", 815, 330, "opponent", "3", side),
+    tacticalAIMirroredPlayer("o4", 740, 410, "opponent", "6", side),
+    tacticalAIMirroredPlayer("o5", 610, 360, "opponent", "8", side)
+  ];
+
+  const zoneX = isLeft ? 145 : 655;
+  const gateX = isLeft ? 360 : 640;
+
+  return {
+    schemaVersion: TACTICAL_AI_SCHEMA_VERSION,
+    title,
+    subtitle: "Geração IA • circulação lateral e cruzamento",
+    reading:
+      "A equipe circula a bola sem acelerar por dentro, leva a posse ao corredor lateral e termina em cruzamento contra uma defesa já organizada.",
+    source: "Gerado por IA • Ajuste manual recomendado",
+    stepCopy: [
+      {
+        title: "Circular",
+        text: "Atrair a defesa com passes seguros e baixa aceleração."
+      },
+      {
+        title: "Abrir",
+        text: "Levar a bola ao corredor lateral para criar ângulo de cruzamento."
+      },
+      {
+        title: "Cruzar",
+        text: "Atacar a área contra uma defesa organizada."
+      }
+    ],
+    players,
+    passes: [
+      { from: "p1", to: "p2", bend: 0.04 },
+      { from: "p2", to: "p3", bend: 0.06 },
+      { from: "p3", to: "p4", bend: isLeft ? 0.14 : -0.14 },
+      { from: "p4", to: "p5", bend: isLeft ? -0.28 : 0.28 }
+    ],
+    runs: [
+      { from: "p5", to: "p6", bend: isLeft ? 0.18 : -0.18 }
+    ],
+    carries: [
+      {
+        from: "p3",
+        to: "p4",
+        control1: { x: isLeft ? -55 : 55, y: 12 },
+        control2: { x: isLeft ? 42 : -42, y: -18 }
+      }
+    ],
+    zones: [
+      {
+        x: zoneX,
+        y: 210,
+        w: 250,
+        h: 265,
+        label: "Corredor do cruzamento"
+      }
+    ],
+    pressures: [
+      { playerId: "o1", r: 30 },
+      { playerId: "o2", r: 30 },
+      { playerId: "o5", r: 32 }
+    ],
+    gates: [
+      { x1: gateX, y1: 214, x2: gateX, y2: 448 }
+    ],
+    steps: [
+      { playerId: "p1", number: 1 },
+      { playerId: "p3", number: 2 },
+      { playerId: "p4", number: 3 }
+    ]
+  };
+}
+
+function tacticalAIBuildTransitionScene(prompt) {
+  const side = tacticalAISide(prompt);
+  const title = "Transição e ataque ao espaço";
+
+  return {
+    schemaVersion: TACTICAL_AI_SCHEMA_VERSION,
+    title,
+    subtitle: "Geração IA • recuperação e aceleração vertical",
+    reading:
+      "Após recuperar a bola, a equipe acelera antes da recomposição adversária e busca o espaço nas costas da última linha.",
+    source: "Gerado por IA • Ajuste manual recomendado",
+    stepCopy: [
+      { title: "Recuperar", text: "Ganhar a segunda bola no setor médio." },
+      { title: "Acelerar", text: "Encontrar o passe vertical antes da pressão chegar." },
+      { title: "Atacar", text: "Projetar o atacante no espaço livre." }
+    ],
+    players: [
+      tacticalAIMirroredPlayer("p1", 300, 360, "highlight", "8", side),
+      tacticalAIMirroredPlayer("p2", 455, 330, "team", "10", side),
+      tacticalAIMirroredPlayer("p3", 610, 270, "team", "11", side),
+      tacticalAIMirroredPlayer("p4", 770, 214, "highlight", "9", side),
+      tacticalAIMirroredPlayer("o1", 405, 275, "opponent", "6", side),
+      tacticalAIMirroredPlayer("o2", 575, 210, "opponent", "4", side),
+      tacticalAIMirroredPlayer("o3", 700, 315, "opponent", "3", side),
+      tacticalAIMirroredPlayer("o4", 820, 395, "opponent", "2", side)
+    ],
+    passes: [
+      { from: "p1", to: "p2", bend: 0.02 },
+      { from: "p2", to: "p4", bend: -0.18 }
+    ],
+    runs: [
+      { from: "p3", to: "p4", bend: -0.24 }
+    ],
+    carries: [
+      {
+        from: "p1",
+        to: "p2",
+        control1: { x: 44, y: -34 },
+        control2: { x: -34, y: 18 }
+      }
+    ],
+    zones: [
+      {
+        x: tacticalAIMirrorX(655, side),
+        y: 120,
+        w: 235,
+        h: 245,
+        label: "Espaço livre"
+      }
+    ],
+    pressures: [
+      { playerId: "o1", r: 32 }
+    ],
+    gates: [
+      {
+        x1: tacticalAIMirrorX(600, side),
+        y1: 180,
+        x2: tacticalAIMirrorX(600, side),
+        y2: 405
+      }
+    ],
+    steps: [
+      { playerId: "p1", number: 1 },
+      { playerId: "p2", number: 2 },
+      { playerId: "p4", number: 3 }
+    ]
+  };
+}
+
+function tacticalAIBuildPressingScene(prompt) {
+  const side = tacticalAISide(prompt);
+
+  return {
+    schemaVersion: TACTICAL_AI_SCHEMA_VERSION,
+    title: "Pressão orientada por fora",
+    subtitle: "Geração IA • armadilha lateral",
+    reading:
+      "A pressão fecha a progressão por dentro, induz o passe para o lado e tenta recuperar perto da linha lateral.",
+    source: "Gerado por IA • Ajuste manual recomendado",
+    stepCopy: [
+      { title: "Fechar", text: "Bloquear o passe interior e orientar a saída." },
+      { title: "Induzir", text: "Forçar a bola para o corredor lateral." },
+      { title: "Saltar", text: "Atacar o portador com superioridade local." }
+    ],
+    players: [
+      tacticalAIMirroredPlayer("p1", 340, 300, "team", "9", side),
+      tacticalAIMirroredPlayer("p2", 450, 240, "highlight", "10", side),
+      tacticalAIMirroredPlayer("p3", 505, 375, "team", "8", side),
+      tacticalAIMirroredPlayer("p4", 610, 435, "team", "7", side),
+      tacticalAIMirroredPlayer("o1", 250, 330, "opponent", "4", side),
+      tacticalAIMirroredPlayer("o2", 380, 405, "opponent", "2", side),
+      tacticalAIMirroredPlayer("o3", 505, 312, "opponent", "6", side)
+    ],
+    passes: [
+      { from: "o1", to: "o2", bend: 0.08 }
+    ],
+    runs: [
+      { from: "p1", to: "o1", bend: 0 },
+      { from: "p4", to: "o2", bend: -0.1 }
+    ],
+    carries: [],
+    zones: [
+      {
+        x: tacticalAIMirrorX(250, side),
+        y: 300,
+        w: 220,
+        h: 180,
+        label: "Armadilha"
+      }
+    ],
+    pressures: [
+      { playerId: "o1", r: 34 },
+      { playerId: "o2", r: 30 }
+    ],
+    gates: [
+      {
+        x1: tacticalAIMirrorX(475, side),
+        y1: 220,
+        x2: tacticalAIMirrorX(475, side),
+        y2: 440
+      }
+    ],
+    steps: [
+      { playerId: "p1", number: 1 },
+      { playerId: "p2", number: 2 },
+      { playerId: "p4", number: 3 }
+    ]
+  };
+}
+
+function tacticalAIGenerateLocalScene(prompt) {
+  const text = String(prompt ?? "").toLowerCase();
+
+  if (
+    text.includes("press") ||
+    text.includes("pressão") ||
+    text.includes("armadilha") ||
+    text.includes("recuperar alto")
+  ) {
+    return tacticalAIBuildPressingScene(prompt);
+  }
+
+  if (
+    text.includes("transição") ||
+    text.includes("contra-ataque") ||
+    text.includes("espaço") ||
+    text.includes("profundidade") ||
+    text.includes("vertical")
+  ) {
+    return tacticalAIBuildTransitionScene(prompt);
+  }
+
+  return tacticalAIBuildCrossingScene(prompt);
+}
+
+function tacticalAINormalizePlayer(raw, fallbackId) {
+  if (!raw || typeof raw !== "object") {
+    return null;
+  }
+
+  const id = tacticalAISafeText(raw.id, fallbackId);
+  const type = ["team", "opponent", "highlight", "ghost"].includes(raw.type)
+    ? raw.type
+    : "team";
+
+  return tacticalAICreatePlayer(
+    id,
+    raw.x,
+    raw.y,
+    type,
+    raw.number == null || raw.number === "" ? null : String(raw.number)
+  );
+}
+
+function tacticalAINormalizeRoute(raw) {
+  if (!raw || typeof raw !== "object") {
+    return null;
+  }
+
+  const from = tacticalAISafeText(raw.from);
+  const to = tacticalAISafeText(raw.to);
+
+  if (!from || !to || from === to) {
+    return null;
+  }
+
+  return {
+    from,
+    to,
+    bend: tacticalAIClamp(raw.bend ?? 0, -0.5, 0.5)
+  };
+}
+
+function tacticalAINormalizeCarry(raw) {
+  if (!raw || typeof raw !== "object") {
+    return null;
+  }
+
+  const from = tacticalAISafeText(raw.from);
+  const to = tacticalAISafeText(raw.to);
+
+  if (!from || !to || from === to) {
+    return null;
+  }
+
+  const carry = { from, to };
+
+  if (raw.control1 && typeof raw.control1 === "object") {
+    carry.control1 = {
+      x: tacticalAIClamp(raw.control1.x ?? 0, -220, 220),
+      y: tacticalAIClamp(raw.control1.y ?? 0, -220, 220)
+    };
+  }
+
+  if (raw.control2 && typeof raw.control2 === "object") {
+    carry.control2 = {
+      x: tacticalAIClamp(raw.control2.x ?? 0, -220, 220),
+      y: tacticalAIClamp(raw.control2.y ?? 0, -220, 220)
+    };
+  }
+
+  return carry;
+}
+
+function tacticalAINormalizeZone(raw) {
+  if (!raw || typeof raw !== "object") {
+    return null;
+  }
+
+  return {
+    x: tacticalAIClamp(raw.x, 40, 900),
+    y: tacticalAIClamp(raw.y, 40, 520),
+    w: tacticalAIClamp(raw.w ?? raw.width ?? 220, 40, 520),
+    h: tacticalAIClamp(raw.h ?? raw.height ?? 180, 40, 420),
+    label: tacticalAISafeText(raw.label)
+  };
+}
+
+function tacticalAINormalizePressure(raw) {
+  if (!raw || typeof raw !== "object") {
+    return null;
+  }
+
+  const playerId = tacticalAISafeText(raw.playerId);
+
+  if (!playerId) {
+    return null;
+  }
+
+  return {
+    playerId,
+    r: tacticalAIClamp(raw.r ?? raw.radius ?? 30, 12, 90)
+  };
+}
+
+function tacticalAINormalizeGate(raw) {
+  if (!raw || typeof raw !== "object") {
+    return null;
+  }
+
+  return {
+    x1: tacticalAIClamp(raw.x1, 40, 960),
+    y1: tacticalAIClamp(raw.y1, 40, 580),
+    x2: tacticalAIClamp(raw.x2, 40, 960),
+    y2: tacticalAIClamp(raw.y2, 40, 580)
+  };
+}
+
+function tacticalAINormalizeStep(raw, fallbackNumber) {
+  if (!raw || typeof raw !== "object") {
+    return null;
+  }
+
+  const playerId = tacticalAISafeText(raw.playerId);
+
+  if (!playerId) {
+    return null;
+  }
+
+  return {
+    playerId,
+    number: raw.number ?? fallbackNumber
+  };
+}
+
+function tacticalAINormalizeStepCopy(raw, index) {
+  if (!raw || typeof raw !== "object") {
+    return null;
+  }
+
+  return {
+    title: tacticalAISafeText(raw.title, `Etapa ${index + 1}`),
+    text: tacticalAISafeText(raw.text, "Descrição da etapa.")
+  };
+}
+
+function tacticalAINormalizeScene(input) {
+  const raw = input?.scene && typeof input.scene === "object"
+    ? input.scene
+    : input;
+
+  if (!raw || typeof raw !== "object") {
+    throw new Error("JSON inválido para cena tática.");
+  }
+
+  const players = (Array.isArray(raw.players) ? raw.players : [])
+    .map((player, index) => tacticalAINormalizePlayer(player, `p${index + 1}`))
+    .filter(Boolean);
+
+  const validPlayerIds = new Set(players.map((player) => player.id));
+
+  const filterLinked = (item) =>
+    item &&
+    validPlayerIds.has(item.from) &&
+    validPlayerIds.has(item.to);
+
+  const passes = (Array.isArray(raw.passes) ? raw.passes : [])
+    .map(tacticalAINormalizeRoute)
+    .filter(filterLinked);
+
+  const runs = (Array.isArray(raw.runs) ? raw.runs : [])
+    .map(tacticalAINormalizeRoute)
+    .filter(filterLinked);
+
+  const carries = (Array.isArray(raw.carries) ? raw.carries : [])
+    .map(tacticalAINormalizeCarry)
+    .filter(filterLinked);
+
+  const pressures = (Array.isArray(raw.pressures) ? raw.pressures : [])
+    .map(tacticalAINormalizePressure)
+    .filter((pressure) => pressure && validPlayerIds.has(pressure.playerId));
+
+  const steps = (Array.isArray(raw.steps) ? raw.steps : [])
+    .map((step, index) => tacticalAINormalizeStep(step, index + 1))
+    .filter((step) => step && validPlayerIds.has(step.playerId));
+
+  const zones = (Array.isArray(raw.zones) ? raw.zones : [])
+    .map(tacticalAINormalizeZone)
+    .filter(Boolean);
+
+  const gates = (Array.isArray(raw.gates) ? raw.gates : [])
+    .map(tacticalAINormalizeGate)
+    .filter(Boolean);
+
+  const stepCopy = (Array.isArray(raw.stepCopy) ? raw.stepCopy : [])
+    .slice(0, 3)
+    .map(tacticalAINormalizeStepCopy)
+    .filter(Boolean);
+
+  return {
+    kicker: tacticalAISafeText(raw.kicker, "Campo tático"),
+    title: tacticalAISafeText(raw.title, "Cena tática gerada"),
+    subtitle: tacticalAISafeText(raw.subtitle, "Geração por IA"),
+    reading: tacticalAISafeText(
+      raw.reading,
+      "Cena gerada a partir de comando em linguagem natural. Ajuste manual recomendado."
+    ),
+    source: tacticalAISafeText(raw.source, "Gerado por IA • Modelo ADQL"),
+    stepCopy: stepCopy.length
+      ? stepCopy
+      : [
+          { title: "Início", text: "Organizar a primeira ação." },
+          { title: "Desenvolver", text: "Conectar a sequência da jogada." },
+          { title: "Finalizar", text: "Atacar o espaço definido." }
+        ],
+    players,
+    passes,
+    runs,
+    carries,
+    zones,
+    pressures,
+    gates,
+    steps
+  };
+}
+
+function tacticalAIApplyScene(data, scene, replaceScene = true) {
+  if (replaceScene) {
+    data.kicker = scene.kicker;
+    data.title = scene.title;
+    data.subtitle = scene.subtitle;
+    data.reading = scene.reading;
+    data.source = scene.source;
+    data.stepCopy = scene.stepCopy;
+
+    TACTICAL_AI_EMPTY_ARRAY_KEYS.forEach((key) => {
+      data[key] = [];
+    });
+  }
+
+  if (!replaceScene) {
+    const existingIds = new Set((data.players || []).map((player) => player.id));
+    const idMap = new Map();
+
+    scene.players.forEach((player) => {
+      let id = player.id;
+      let counter = 2;
+
+      while (existingIds.has(id)) {
+        id = `${player.id}-${counter}`;
+        counter += 1;
+      }
+
+      existingIds.add(id);
+      idMap.set(player.id, id);
+
+      ensureTacticalArray(data, "players").push({
+        ...player,
+        id
+      });
+    });
+
+    const remapRoute = (route) => ({
+      ...route,
+      from: idMap.get(route.from) || route.from,
+      to: idMap.get(route.to) || route.to
+    });
+
+    scene.passes.forEach((route) => ensureTacticalArray(data, "passes").push(remapRoute(route)));
+    scene.runs.forEach((route) => ensureTacticalArray(data, "runs").push(remapRoute(route)));
+    scene.carries.forEach((route) => ensureTacticalArray(data, "carries").push(remapRoute(route)));
+    scene.zones.forEach((zone) => ensureTacticalArray(data, "zones").push(zone));
+    scene.gates.forEach((gate) => ensureTacticalArray(data, "gates").push(gate));
+    scene.pressures.forEach((pressure) => {
+      const playerId = idMap.get(pressure.playerId) || pressure.playerId;
+      if (existingIds.has(playerId)) {
+        ensureTacticalArray(data, "pressures").push({ ...pressure, playerId });
+      }
+    });
+    scene.steps.forEach((step) => {
+      const playerId = idMap.get(step.playerId) || step.playerId;
+      if (existingIds.has(playerId)) {
+        ensureTacticalArray(data, "steps").push({ ...step, playerId });
+      }
+    });
+
+    return;
+  }
+
+  data.players = scene.players;
+  data.passes = scene.passes;
+  data.runs = scene.runs;
+  data.carries = scene.carries;
+  data.zones = scene.zones;
+  data.pressures = scene.pressures;
+  data.gates = scene.gates;
+  data.steps = scene.steps;
+}
+
+function tacticalAISchemaForPrompt() {
+  return {
+    schemaVersion: TACTICAL_AI_SCHEMA_VERSION,
+    title: "string",
+    subtitle: "string",
+    reading: "string",
+    source: "string",
+    stepCopy: [
+      { title: "string", text: "string" },
+      { title: "string", text: "string" },
+      { title: "string", text: "string" }
+    ],
+    players: [
+      {
+        id: "p1",
+        x: 150,
+        y: 420,
+        type: "team | opponent | highlight | ghost",
+        number: "optional string"
+      }
+    ],
+    passes: [{ from: "p1", to: "p2", bend: 0 }],
+    runs: [{ from: "p2", to: "p3", bend: 0 }],
+    carries: [
+      {
+        from: "p3",
+        to: "p4",
+        control1: { x: 40, y: -30 },
+        control2: { x: -30, y: 20 }
+      }
+    ],
+    zones: [{ x: 520, y: 120, w: 300, h: 340, label: "string" }],
+    pressures: [{ playerId: "o1", r: 30 }],
+    gates: [{ x1: 440, y1: 202, x2: 478, y2: 378 }],
+    steps: [{ playerId: "p1", number: 1 }]
+  };
+}
+
+function tacticalAIBuildPrompt(userPrompt) {
+  return [
+    "Você é um analista tático de futebol e deve transformar uma descrição em uma cena JSON para o componente ADQL C-03.",
+    "Responda somente com JSON válido. Não use markdown.",
+    "Sistema de coordenadas: campo SVG de 1000x620; jogadores devem ficar entre x 72–928 e y 72–548.",
+    "Tipos de jogador permitidos: team, opponent, highlight, ghost.",
+    "Use IDs curtos e únicos. Jogadores da equipe com bola começam em p1, p2...; adversários em o1, o2...",
+    "Crie de 6 a 12 jogadores no total, salvo quando a descrição pedir diferente.",
+    "Crie no máximo 4 passes, 3 corridas, 2 conduções, 2 zonas, 3 pressões, 2 linhas de ruptura e 3 marcadores.",
+    "A cena deve ser um rascunho tático editável, não uma verdade absoluta.",
+    "Formato esperado:",
+    JSON.stringify(tacticalAISchemaForPrompt(), null, 2),
+    "Descrição do usuário:",
+    String(userPrompt ?? "").trim()
+  ].join("\n\n");
+}
+
+async function tacticalAICopyPrompt(state) {
+  const prompt = tacticalAIBuildPrompt(state.aiPrompt);
+
+  if (navigator.clipboard?.writeText) {
+    await navigator.clipboard.writeText(prompt);
+    return true;
+  }
+
+  return false;
+}
+
+async function tacticalAIFetchScene({ endpoint, prompt }) {
+  const response = await fetch(endpoint, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify({
+      component: "C-03",
+      schemaVersion: TACTICAL_AI_SCHEMA_VERSION,
+      prompt,
+      expectedSchema: tacticalAISchemaForPrompt()
+    })
+  });
+
+  if (!response.ok) {
+    throw new Error(`Endpoint retornou ${response.status}.`);
+  }
+
+  return response.json();
+}
+
+function tacticalBuildAICard({
+  data,
+  win,
+  state,
+  rerender,
+  renderWorkspace
+}) {
+  const accordion = tacticalAccordion(
+    "ChatGPT manual — Gerar jogada",
+    state.aiAccordionOpen !== false
+  );
+
+  accordion.details.addEventListener("toggle", () => {
+    state.aiAccordionOpen = accordion.details.open;
+  });
+
+  const keepAIAccordionOpen = () => {
+    state.aiAccordionOpen = true;
+    renderWorkspace();
+  };
+
+  const card = tacticalElement(
+    "section",
+    "ti-card ti-ai-card"
+  );
+
+  const head = tacticalElement(
+    "div",
+    "ti-card-head"
+  );
+
+  const copy = tacticalElement(
+    "div",
+    "ti-ai-head-copy"
+  );
+
+  copy.appendChild(
+    tacticalElement(
+      "h4",
+      "",
+      "Comando tático"
+    )
+  );
+
+  copy.appendChild(
+    tacticalElement(
+      "small",
+      "",
+      "Sem API: copie o prompt, cole no ChatGPT, traga o JSON e aplique no campo."
+    )
+  );
+
+  head.appendChild(copy);
+  head.appendChild(
+    tacticalElement(
+      "span",
+      "ti-count",
+      "GPT"
+    )
+  );
+  card.appendChild(head);
+
+  const steps = tacticalElement(
+    "div",
+    "ti-ai-status",
+    "Fluxo: 1) descreva a jogada  2) copie o prompt  3) cole no ChatGPT  4) cole o JSON retornado abaixo  5) aplique no campo."
+  );
+  card.appendChild(steps);
+
+  const promptLabel = tacticalElement(
+    "div",
+    "ti-field-label",
+    "Descrição da jogada"
+  );
+  card.appendChild(promptLabel);
+
+  const promptInput = document.createElement("textarea");
+  promptInput.className = "ti-ai-textarea";
+  promptInput.placeholder =
+    "Ex.: circulação lenta → bola para o lado → cruzamento contra uma defesa organizada";
+  promptInput.value = state.aiPrompt ?? "";
+  promptInput.oninput = () => {
+    state.aiPrompt = promptInput.value;
+  };
+  card.appendChild(promptInput);
+
+  const replaceRow = tacticalElement(
+    "label",
+    "ti-ai-option-row"
+  );
+  replaceRow.appendChild(
+    tacticalElement(
+      "span",
+      "",
+      "Substituir a cena atual"
+    )
+  );
+  const replaceInput = document.createElement("input");
+  replaceInput.type = "checkbox";
+  replaceInput.checked = state.aiReplaceScene !== false;
+  replaceInput.onchange = () => {
+    state.aiReplaceScene = replaceInput.checked;
+  };
+  replaceRow.appendChild(replaceInput);
+  card.appendChild(replaceRow);
+
+  const actions = tacticalElement(
+    "div",
+    "ti-ai-actions"
+  );
+
+  actions.appendChild(
+    tacticalButton({
+      label: "Gerar rascunho local",
+      className: "ti-button-primary",
+      onClick: () => {
+        try {
+          const scene = tacticalAINormalizeScene(
+            tacticalAIGenerateLocalScene(state.aiPrompt)
+          );
+
+          tacticalAIApplyScene(
+            data,
+            scene,
+            state.aiReplaceScene !== false
+          );
+
+          state.mode = null;
+          state.routeStartPlayerId = null;
+          state.selectedPlayerId = null;
+          state.aiJson = JSON.stringify(scene, null, 2);
+          state.aiStatus = "Rascunho local aplicado. Ajuste manualmente os detalhes finos.";
+
+          tacticalSyncInteractionState(win, state);
+          rerender();
+          keepAIAccordionOpen();
+        } catch (error) {
+          state.aiStatus = `Erro: ${error.message}`;
+          keepAIAccordionOpen();
+        }
+      }
+    })
+  );
+
+  actions.appendChild(
+    tacticalButton({
+      label: "Copiar prompt para ChatGPT",
+      onClick: async () => {
+        try {
+          const prompt = tacticalAIBuildPrompt(state.aiPrompt);
+          state.aiPromptPreview = prompt;
+          const copied = await tacticalAICopyPrompt(state);
+          state.aiStatus = copied
+            ? "Prompt copiado. Cole no ChatGPT e peça para responder somente com o JSON."
+            : "Não foi possível copiar automaticamente. O prompt foi exibido abaixo para cópia manual.";
+          keepAIAccordionOpen();
+        } catch (error) {
+          state.aiStatus = `Erro ao copiar: ${error.message}`;
+          keepAIAccordionOpen();
+        }
+      }
+    })
+  );
+
+  actions.appendChild(
+    tacticalButton({
+      label: "Ver JSON atual",
+      onClick: () => {
+        state.aiJson = JSON.stringify(
+          {
+            schemaVersion: TACTICAL_AI_SCHEMA_VERSION,
+            title: data.title,
+            subtitle: data.subtitle,
+            reading: data.reading,
+            source: data.source,
+            stepCopy: data.stepCopy || [],
+            players: data.players || [],
+            passes: data.passes || [],
+            runs: data.runs || [],
+            carries: data.carries || [],
+            zones: data.zones || [],
+            pressures: data.pressures || [],
+            gates: data.gates || [],
+            steps: data.steps || []
+          },
+          null,
+          2
+        );
+        state.aiStatus = "JSON atual carregado para inspeção ou edição.";
+        keepAIAccordionOpen();
+      }
+    })
+  );
+
+  actions.appendChild(
+    tacticalButton({
+      label: "Validar JSON",
+      onClick: () => {
+        try {
+          const parsed = JSON.parse(state.aiJson || "{}");
+          tacticalAINormalizeScene(parsed);
+          state.aiStatus = "JSON válido e compatível com o C-03.";
+          keepAIAccordionOpen();
+        } catch (error) {
+          state.aiStatus = `JSON inválido: ${error.message}`;
+          keepAIAccordionOpen();
+        }
+      }
+    })
+  );
+
+  actions.appendChild(
+    tacticalButton({
+      label: "Aplicar JSON",
+      className: "ti-button-primary",
+      onClick: () => {
+        try {
+          const parsed = JSON.parse(state.aiJson || "{}");
+          const scene = tacticalAINormalizeScene(parsed);
+
+          tacticalAIApplyScene(
+            data,
+            scene,
+            state.aiReplaceScene !== false
+          );
+
+          state.mode = null;
+          state.routeStartPlayerId = null;
+          state.selectedPlayerId = null;
+          state.aiStatus = "JSON aplicado ao campo.";
+
+          tacticalSyncInteractionState(win, state);
+          rerender();
+          keepAIAccordionOpen();
+        } catch (error) {
+          state.aiStatus = `JSON inválido: ${error.message}`;
+          keepAIAccordionOpen();
+        }
+      }
+    })
+  );
+
+  card.appendChild(actions);
+
+  if (state.aiPromptPreview) {
+    card.appendChild(
+      tacticalElement(
+        "div",
+        "ti-field-label",
+        "Prompt estruturado para copiar"
+      )
+    );
+
+    const promptPreview = document.createElement("textarea");
+    promptPreview.className = "ti-ai-textarea";
+    promptPreview.value = state.aiPromptPreview;
+    promptPreview.readOnly = true;
+    promptPreview.style.minHeight = "150px";
+    promptPreview.onclick = () => {
+      promptPreview.select();
+    };
+    card.appendChild(promptPreview);
+  }
+
+  card.appendChild(
+    tacticalElement(
+      "div",
+      "ti-field-label",
+      "JSON retornado pelo ChatGPT"
+    )
+  );
+
+  const jsonInput = document.createElement("textarea");
+  jsonInput.className = "ti-ai-textarea";
+  jsonInput.placeholder = "Cole aqui somente o JSON retornado pelo ChatGPT. Não cole markdown nem explicações.";
+  jsonInput.value = state.aiJson ?? "";
+  jsonInput.style.minHeight = "170px";
+  jsonInput.oninput = () => {
+    state.aiJson = jsonInput.value;
+  };
+  card.appendChild(jsonInput);
+
+  if (state.aiStatus) {
+    const status = tacticalElement(
+      "div",
+      `ti-ai-status${state.aiStatus.toLowerCase().includes("erro") || state.aiStatus.toLowerCase().includes("inválido") ? " is-error" : ""}`,
+      state.aiStatus
+    );
+    card.appendChild(status);
+  }
+
+  accordion.body.appendChild(card);
+
+  return accordion.details;
 }
 
 function tacticalBuildHeaderTools({
@@ -2812,6 +3976,7 @@ function buildAdvancedTacticalInspector({
 }) {
   form.innerHTML = "";
   ensureTacticalInspectorStyles();
+  ensureTacticalAIStyles();
 
   const win = frame.contentWindow;
   const data = win[schema.dataKey];
@@ -2863,6 +4028,17 @@ function buildAdvancedTacticalInspector({
       tacticalBuildStatus({
         win,
         state,
+        renderWorkspace
+      })
+    );
+
+    workspace.appendChild(
+      tacticalBuildAICard({
+        data,
+        win,
+        schema,
+        state,
+        rerender,
         renderWorkspace
       })
     );

@@ -182,6 +182,72 @@ function applyTacticalInteractionClasses(svg) {
     });
 }
 
+function getTacticalPlayerPalette(type) {
+  switch (type) {
+    case "opponent":
+      return {
+        fill: "#c84a3f",
+        stroke: "#fff4ec",
+        text: "#ffffff",
+        halo: "drop-shadow(0 0 2px rgba(200,74,63,.95)) drop-shadow(0 0 6px rgba(200,74,63,.34))",
+        opacity: "1"
+      };
+    case "highlight":
+      return {
+        fill: "#d6a11e",
+        stroke: "#071f3d",
+        text: "#071f3d",
+        halo: "drop-shadow(0 0 2px rgba(214,161,30,.95)) drop-shadow(0 0 7px rgba(214,161,30,.42))",
+        opacity: "1"
+      };
+    case "ghost":
+      return {
+        fill: "#c8d0d8",
+        stroke: "#6e7b88",
+        text: "#4f5b66",
+        halo: "none",
+        opacity: ".9"
+      };
+    case "team":
+    default:
+      return {
+        fill: "#071f3d",
+        stroke: "#f5efe2",
+        text: "#ffffff",
+        halo: "drop-shadow(0 0 2px rgba(7,31,61,.82))",
+        opacity: "1"
+      };
+  }
+}
+
+function applyTacticalPlayerVisual(node, player) {
+  if (!node || !player) {
+    return;
+  }
+
+  const palette = getTacticalPlayerPalette(player.type);
+
+  node.dataset.playerType = player.type || "team";
+  node.style.opacity = palette.opacity;
+  node.style.filter = palette.halo;
+
+  node
+    .querySelectorAll("circle, ellipse")
+    .forEach((shape) => {
+      shape.style.fill = palette.fill;
+      shape.style.stroke = palette.stroke;
+      shape.style.strokeWidth = "3px";
+    });
+
+  node
+    .querySelectorAll("text, tspan")
+    .forEach((label) => {
+      label.style.fill = palette.text;
+      label.style.stroke = "none";
+      label.style.fontWeight = "800";
+    });
+}
+
 function annotateTacticalPlayers(svg, data) {
   const playerLayer = svg.querySelector(
     '[data-layer="players"]'
@@ -212,7 +278,9 @@ function annotateTacticalPlayers(svg, data) {
       }
 
       node.dataset.playerId = player.id;
+      node.dataset.playerType = player.type || "team";
       node.classList.add("tp-player-node");
+      applyTacticalPlayerVisual(node, player);
     }
   );
 
