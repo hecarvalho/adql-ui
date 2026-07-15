@@ -1,0 +1,365 @@
+{
+  "component": "C-06",
+  "schemaVersion": "adql.c06.table.v1",
+  "title": "Ranking FBref — xG/90",
+  "subtitle": "Big 5 European Leagues Combined | 2025-2026 | mínimo: 5.0 jogos de 90 minutos",
+  "data": {
+    "columns": [
+      "#",
+      "Jogador",
+      "Equipe",
+      "90s",
+      "Gols/90",
+      "Assistências/90",
+      "xG/90",
+      "xAG/90",
+      "Chutes/90",
+      "Score"
+    ],
+    "rows": [
+      [
+        "1",
+        "Ben White",
+        "Arsenal",
+        "7.8",
+        "0",
+        "0.13",
+        "0",
+        "0",
+        "0.64",
+        "50"
+      ],
+      [
+        "2",
+        "Bukayo Saka",
+        "Arsenal",
+        "24.7",
+        "0.28",
+        "0.20",
+        "0",
+        "0",
+        "2.88",
+        "65"
+      ],
+      [
+        "3",
+        "Cristhian Mosquera",
+        "Arsenal",
+        "11.0",
+        "0",
+        "0",
+        "0",
+        "0",
+        "0.09",
+        "40"
+      ],
+      [
+        "4",
+        "David Raya",
+        "Arsenal",
+        "37.0",
+        "0",
+        "0",
+        "0",
+        "0",
+        "0",
+        "28"
+      ],
+      [
+        "5",
+        "Declan Rice",
+        "Arsenal",
+        "34.4",
+        "0.12",
+        "0.15",
+        "0",
+        "0",
+        "1.16",
+        "59"
+      ],
+      [
+        "6",
+        "Eberechi Eze",
+        "Arsenal",
+        "20.1",
+        "0.35",
+        "0.10",
+        "0",
+        "0",
+        "2.83",
+        "61"
+      ],
+      [
+        "7",
+        "Gabriel Magalhães",
+        "Arsenal",
+        "30.6",
+        "0.10",
+        "0.13",
+        "0",
+        "0",
+        "0.88",
+        "52"
+      ],
+      [
+        "8",
+        "Gabriel Martinelli",
+        "Arsenal",
+        "12.0",
+        "0.08",
+        "0.33",
+        "0",
+        "0",
+        "2.41",
+        "58"
+      ],
+      [
+        "9",
+        "Jurriën Timber",
+        "Arsenal",
+        "27.3",
+        "0.11",
+        "0.18",
+        "0",
+        "0",
+        "0.92",
+        "59"
+      ],
+      [
+        "10",
+        "Kai Havertz",
+        "Arsenal",
+        "6.5",
+        "0.31",
+        "0.46",
+        "0",
+        "0",
+        "2.79",
+        "65"
+      ]
+    ],
+    "source": "FBref via soccerdata | Big 5 European Leagues Combined | 2025-2026",
+    "rawMetrics": [
+      {
+        "rank": 1,
+        "name": "Ben White",
+        "team": "Arsenal",
+        "minutes90": 7.8,
+        "rawValues": {
+          "Gols/90": 0.0,
+          "Assistências/90": 0.13,
+          "xG/90": 0.0,
+          "xAG/90": 0.0,
+          "Chutes/90": 0.64
+        },
+        "percentiles": {
+          "Gols/90": 17.9,
+          "Assistências/90": 72.4,
+          "xG/90": 50.0,
+          "xAG/90": 50.0,
+          "Chutes/90": 34.6
+        },
+        "score": 50.2
+      },
+      {
+        "rank": 2,
+        "name": "Bukayo Saka",
+        "team": "Arsenal",
+        "minutes90": 24.7,
+        "rawValues": {
+          "Gols/90": 0.28,
+          "Assistências/90": 0.2,
+          "xG/90": 0.0,
+          "xAG/90": 0.0,
+          "Chutes/90": 2.88
+        },
+        "percentiles": {
+          "Gols/90": 84.8,
+          "Assistências/90": 87.0,
+          "xG/90": 50.0,
+          "xAG/90": 50.0,
+          "Chutes/90": 93.9
+        },
+        "score": 64.8
+      },
+      {
+        "rank": 3,
+        "name": "Cristhian Mosquera",
+        "team": "Arsenal",
+        "minutes90": 11.0,
+        "rawValues": {
+          "Gols/90": 0.0,
+          "Assistências/90": 0.0,
+          "xG/90": 0.0,
+          "xAG/90": 0.0,
+          "Chutes/90": 0.09
+        },
+        "percentiles": {
+          "Gols/90": 17.9,
+          "Assistências/90": 18.6,
+          "xG/90": 50.0,
+          "xAG/90": 50.0,
+          "Chutes/90": 8.0
+        },
+        "score": 40.2
+      },
+      {
+        "rank": 4,
+        "name": "David Raya",
+        "team": "Arsenal",
+        "minutes90": 37.0,
+        "rawValues": {
+          "Gols/90": 0.0,
+          "Assistências/90": 0.0,
+          "xG/90": 0.0,
+          "xAG/90": 0.0,
+          "Chutes/90": 0.0
+        },
+        "percentiles": {
+          "Gols/90": 17.9,
+          "Assistências/90": 18.6,
+          "xG/90": 50.0,
+          "xAG/90": 50.0,
+          "Chutes/90": 3.7
+        },
+        "score": 28.0
+      },
+      {
+        "rank": 5,
+        "name": "Declan Rice",
+        "team": "Arsenal",
+        "minutes90": 34.4,
+        "rawValues": {
+          "Gols/90": 0.12,
+          "Assistências/90": 0.15,
+          "xG/90": 0.0,
+          "xAG/90": 0.0,
+          "Chutes/90": 1.16
+        },
+        "percentiles": {
+          "Gols/90": 63.7,
+          "Assistências/90": 77.3,
+          "xG/90": 50.0,
+          "xAG/90": 50.0,
+          "Chutes/90": 57.9
+        },
+        "score": 58.5
+      },
+      {
+        "rank": 6,
+        "name": "Eberechi Eze",
+        "team": "Arsenal",
+        "minutes90": 20.1,
+        "rawValues": {
+          "Gols/90": 0.35,
+          "Assistências/90": 0.1,
+          "xG/90": 0.0,
+          "xAG/90": 0.0,
+          "Chutes/90": 2.83
+        },
+        "percentiles": {
+          "Gols/90": 89.7,
+          "Assistências/90": 63.8,
+          "xG/90": 50.0,
+          "xAG/90": 50.0,
+          "Chutes/90": 93.4
+        },
+        "score": 61.0
+      },
+      {
+        "rank": 7,
+        "name": "Gabriel Magalhães",
+        "team": "Arsenal",
+        "minutes90": 30.6,
+        "rawValues": {
+          "Gols/90": 0.1,
+          "Assistências/90": 0.13,
+          "xG/90": 0.0,
+          "xAG/90": 0.0,
+          "Chutes/90": 0.88
+        },
+        "percentiles": {
+          "Gols/90": 59.1,
+          "Assistências/90": 72.4,
+          "xG/90": 50.0,
+          "xAG/90": 50.0,
+          "Chutes/90": 47.7
+        },
+        "score": 52.2
+      },
+      {
+        "rank": 8,
+        "name": "Gabriel Martinelli",
+        "team": "Arsenal",
+        "minutes90": 12.0,
+        "rawValues": {
+          "Gols/90": 0.08,
+          "Assistências/90": 0.33,
+          "xG/90": 0.0,
+          "xAG/90": 0.0,
+          "Chutes/90": 2.41
+        },
+        "percentiles": {
+          "Gols/90": 53.2,
+          "Assistências/90": 96.7,
+          "xG/90": 50.0,
+          "xAG/90": 50.0,
+          "Chutes/90": 87.1
+        },
+        "score": 57.8
+      },
+      {
+        "rank": 9,
+        "name": "Jurriën Timber",
+        "team": "Arsenal",
+        "minutes90": 27.3,
+        "rawValues": {
+          "Gols/90": 0.11,
+          "Assistências/90": 0.18,
+          "xG/90": 0.0,
+          "xAG/90": 0.0,
+          "Chutes/90": 0.92
+        },
+        "percentiles": {
+          "Gols/90": 61.8,
+          "Assistências/90": 83.4,
+          "xG/90": 50.0,
+          "xAG/90": 50.0,
+          "Chutes/90": 49.2
+        },
+        "score": 59.4
+      },
+      {
+        "rank": 10,
+        "name": "Kai Havertz",
+        "team": "Arsenal",
+        "minutes90": 6.5,
+        "rawValues": {
+          "Gols/90": 0.31,
+          "Assistências/90": 0.46,
+          "xG/90": 0.0,
+          "xAG/90": 0.0,
+          "Chutes/90": 2.79
+        },
+        "percentiles": {
+          "Gols/90": 87.6,
+          "Assistências/90": 99.1,
+          "xG/90": 50.0,
+          "xAG/90": 50.0,
+          "Chutes/90": 93.2
+        },
+        "score": 64.6
+      }
+    ],
+    "normalization": {
+      "type": "percentile",
+      "scale": "0-100",
+      "min90s": 5.0,
+      "displayValueType": "raw",
+      "sortMetric": "xG/90",
+      "sortMode": "percentile"
+    }
+  },
+  "description": "Tabela gerada a partir de estatísticas do FBref. Os valores exibidos podem ser brutos por 90 ou percentis, conforme o modo escolhido no exportador.",
+  "source": "FBref via soccerdata | Big 5 European Leagues Combined | 2025-2026"
+}
