@@ -1,0 +1,38 @@
+{
+  "component": "C-06",
+  "schemaVersion": "adql.c06.table.v1",
+  "title": "ClubElo no banco ADQL",
+  "subtitle": "Tabela gerada a partir do SQLite local",
+  "data": {
+    "columns": [
+      "Data",
+      "Equipe",
+      "País",
+      "Ranking",
+      "Elo"
+    ],
+    "rows": [
+      [
+        "2026-01-10",
+        "Barcelona",
+        "ESP",
+        2,
+        1948.7
+      ],
+      [
+        "2026-01-10",
+        "Liverpool",
+        "ENG",
+        4,
+        1922.1
+      ],
+      [
+        "2026-01-10",
+        "Arsenal",
+        "ENG",
+        5,
+        1908.4
+      ]
+    ]
+  }
+}

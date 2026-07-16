@@ -1,0 +1,87 @@
+{
+  "component": "C-06",
+  "schemaVersion": "adql.c06.table.v1",
+  "title": "Jogadores no banco ADQL",
+  "subtitle": "Métricas por 90 geradas a partir do SQLite local",
+  "data": {
+    "columns": [
+      "Jogador",
+      "Equipe",
+      "Fonte",
+      "Min",
+      "Gols/90",
+      "Assist/90",
+      "xG/90",
+      "xA/90",
+      "Chutes/90"
+    ],
+    "rows": [
+      [
+        "Mohamed Salah",
+        "Liverpool",
+        "FBref",
+        2700.0,
+        0.7,
+        0.4,
+        0.63,
+        0.3,
+        3.47
+      ],
+      [
+        "Bukayo Saka",
+        "Arsenal",
+        "FBref",
+        2550.0,
+        0.56,
+        0.35,
+        0.47,
+        0.31,
+        3.21
+      ],
+      [
+        "Lamine Yamal",
+        "Barcelona",
+        "FBref",
+        2350.0,
+        0.34,
+        0.54,
+        0.29,
+        0.44,
+        2.76
+      ],
+      [
+        "Mohamed Salah",
+        "Liverpool",
+        "Understat",
+        2500.0,
+        0.76,
+        0.0,
+        0.7,
+        0.36,
+        3.06
+      ],
+      [
+        "Bukayo Saka",
+        "Arsenal",
+        "Understat",
+        2500.0,
+        0.58,
+        0.0,
+        0.48,
+        0.34,
+        3.06
+      ],
+      [
+        "Lamine Yamal",
+        "Barcelona",
+        "Understat",
+        2500.0,
+        0.32,
+        0.0,
+        0.29,
+        0.44,
+        3.06
+      ]
+    ]
+  }
+}
