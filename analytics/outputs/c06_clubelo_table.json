@@ -1,0 +1,156 @@
+{
+  "component": "C-06",
+  "schemaVersion": "adql.c06.table.v1",
+  "title": "ClubElo — Top 15 equipes",
+  "subtitle": "Ranking de força relativa por rating Elo",
+  "data": {
+    "columns": [
+      "Pos.",
+      "Equipe",
+      "País",
+      "Nível",
+      "Elo",
+      "Data"
+    ],
+    "rows": [
+      [
+        "1",
+        "Arsenal",
+        "ENG",
+        "1",
+        "2064",
+        "31/05/2026"
+      ],
+      [
+        "2",
+        "Man City",
+        "ENG",
+        "1",
+        "1971",
+        "05/07/2026"
+      ],
+      [
+        "3",
+        "Paris SG",
+        "FRA",
+        "1",
+        "1968",
+        "05/07/2026"
+      ],
+      [
+        "4",
+        "Barcelona",
+        "ESP",
+        "1",
+        "1952",
+        "05/07/2026"
+      ],
+      [
+        "5",
+        "Real Madrid",
+        "ESP",
+        "1",
+        "1923",
+        "05/07/2026"
+      ],
+      [
+        "6",
+        "Aston Villa",
+        "ENG",
+        "1",
+        "1921",
+        "05/07/2026"
+      ],
+      [
+        "7",
+        "Man United",
+        "ENG",
+        "1",
+        "1915",
+        "05/07/2026"
+      ],
+      [
+        "8",
+        "Liverpool",
+        "ENG",
+        "1",
+        "1911",
+        "05/07/2026"
+      ],
+      [
+        "9",
+        "Inter",
+        "ITA",
+        "1",
+        "1889",
+        "05/07/2026"
+      ],
+      [
+        "10",
+        "Bournemouth",
+        "ENG",
+        "1",
+        "1872",
+        "05/07/2026"
+      ],
+      [
+        "11",
+        "Sporting",
+        "POR",
+        "1",
+        "1848",
+        "05/07/2026"
+      ],
+      [
+        "12",
+        "Brighton",
+        "ENG",
+        "1",
+        "1842",
+        "05/07/2026"
+      ],
+      [
+        "13",
+        "Newcastle",
+        "ENG",
+        "1",
+        "1838",
+        "05/07/2026"
+      ],
+      [
+        "14",
+        "Brentford",
+        "ENG",
+        "1",
+        "1837",
+        "05/07/2026"
+      ],
+      [
+        "15",
+        "Dortmund",
+        "GER",
+        "1",
+        "1835",
+        "05/07/2026"
+      ]
+    ],
+    "source": "ClubElo via soccerdata | data atual",
+    "normalization": {
+      "type": "clubelo_rating",
+      "mode": "top",
+      "top": 15,
+      "date": null
+    },
+    "rawMetrics": {
+      "mode": "top",
+      "teams": [
+        "Arsenal",
+        "Liverpool"
+      ],
+      "top": 15,
+      "date": null
+    }
+  },
+  "description": "Tabela gerada com ratings ClubElo. Use como contexto de força relativa e nível do adversário; não trate Elo como métrica isolada de desempenho técnico, físico ou tático.",
+  "source": "ClubElo via soccerdata | data atual"
+}

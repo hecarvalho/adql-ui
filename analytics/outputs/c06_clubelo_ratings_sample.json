@@ -1,0 +1,76 @@
+{
+  "component": "C-06",
+  "schemaVersion": "adql.c06.table.v1",
+  "title": "ClubElo — Top 5 equipes",
+  "subtitle": "Ranking de força relativa por rating Elo",
+  "data": {
+    "columns": [
+      "Pos.",
+      "Equipe",
+      "País",
+      "Nível",
+      "Elo",
+      "Data"
+    ],
+    "rows": [
+      [
+        "1",
+        "Man City",
+        "ENG",
+        "1",
+        "2054",
+        "16/07/2026"
+      ],
+      [
+        "2",
+        "Real Madrid",
+        "ESP",
+        "1",
+        "2042",
+        "16/07/2026"
+      ],
+      [
+        "3",
+        "Arsenal",
+        "ENG",
+        "1",
+        "1978",
+        "16/07/2026"
+      ],
+      [
+        "4",
+        "Bayern",
+        "GER",
+        "1",
+        "1967",
+        "16/07/2026"
+      ],
+      [
+        "5",
+        "Liverpool",
+        "ENG",
+        "1",
+        "1959",
+        "16/07/2026"
+      ]
+    ],
+    "source": "Base fictícia ClubElo / ADQL Analytics Layer",
+    "normalization": {
+      "type": "clubelo_rating",
+      "mode": "top",
+      "top": 5,
+      "date": null
+    },
+    "rawMetrics": {
+      "mode": "top",
+      "teams": [
+        "Arsenal",
+        "Liverpool"
+      ],
+      "top": 5,
+      "date": null
+    }
+  },
+  "description": "Tabela gerada com ratings ClubElo. Use como contexto de força relativa e nível do adversário; não trate Elo como métrica isolada de desempenho técnico, físico ou tático.",
+  "source": "Base fictícia ClubElo / ADQL Analytics Layer"
+}
