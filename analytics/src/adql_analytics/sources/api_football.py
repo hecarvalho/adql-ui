@@ -4,7 +4,7 @@ import os
 import time
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Any, Iterable
+from typing import Any, Iterable, Sequence
 
 import requests
 
@@ -90,6 +90,28 @@ class APIFootballClient:
         payload = self.get("fixtures", {key: value for key, value in params.items() if value is not None})
         return list(payload.get("response") or [])
 
+
+    def fixture_by_id(self, fixture_id: int | str) -> list[dict[str, Any]]:
+        """Busca um fixture usando `id`, compatível com plano gratuito.
+
+        O parâmetro `ids` pode ser bloqueado no plano gratuito da API-Football.
+        Para manter o modo full funcionando sem plano pago, usamos `id` e
+        repetimos a chamada quando houver mais de um fixture.
+        """
+        return self.fixtures(id=fixture_id)
+
+    def fixtures_by_ids(self, fixture_ids: Sequence[int | str]) -> list[dict[str, Any]]:
+        """Busca fixtures usando `ids`, disponível apenas em alguns planos.
+
+        Use somente com `--use-ids-param`. No plano gratuito, a API pode
+        retornar: "Free plans do not have access to the Ids parameter."
+        """
+        ids = [str(item).strip() for item in fixture_ids if str(item).strip()]
+        if not ids:
+            return []
+        payload = self.get("fixtures", {"ids": "-".join(ids)})
+        return list(payload.get("response") or [])
+
     def fixture_statistics(self, fixture_id: int | str) -> list[dict[str, Any]]:
         payload = self.get("fixtures/statistics", {"fixture": fixture_id})
         return list(payload.get("response") or [])
@@ -110,6 +132,85 @@ class APIFootballClient:
         payload = self.get("standings", {"league": league, "season": season})
         return list(payload.get("response") or [])
 
+
+
+def normalize_full_fixture_row(row: dict[str, Any]) -> dict[str, Any]:
+    """Converte a resposta enriquecida de `/fixtures?ids=` no bundle ADQL.
+
+    A resposta enriquecida pode trazer `statistics`, `events`, `lineups` e
+    `players` no mesmo objeto do fixture. O writer atual já trabalha com o
+    formato de bundle abaixo, então esta função mantém compatibilidade com a
+    versão anterior.
+    """
+    return {
+        "fixture": {
+            "fixture": row.get("fixture") or {},
+            "league": row.get("league") or {},
+            "teams": row.get("teams") or {},
+            "goals": row.get("goals") or {},
+            "score": row.get("score") or {},
+        },
+        "statistics": list(row.get("statistics") or []),
+        "events": list(row.get("events") or []),
+        "lineups": list(row.get("lineups") or []),
+        "players": list(row.get("players") or []),
+        "_full_fixture_response": True,
+    }
+
+
+def fetch_fixture_full_bundles(
+    fixture_ids: Sequence[int | str],
+    *,
+    client: APIFootballClient | None = None,
+    chunk_size: int = 20,
+    use_ids_param: bool = False,
+) -> list[dict[str, Any]]:
+    """Busca fixtures em modo full e retorna bundles ADQL.
+
+    Por padrão, usa `/fixtures?id=FIXTURE_ID`, que é o caminho compatível com
+    plano gratuito. O parâmetro `/fixtures?ids=ID1-ID2` é mantido como opção
+    para planos que liberam essa funcionalidade, mas não deve ser o padrão no
+    ADQL.
+    """
+    api = client or APIFootballClient()
+    ids = [str(item).strip() for item in fixture_ids if str(item).strip()]
+    if not ids:
+        return []
+
+    bundles: list[dict[str, Any]] = []
+
+    if use_ids_param:
+        size = max(1, int(chunk_size or 1))
+        for start in range(0, len(ids), size):
+            chunk = ids[start : start + size]
+            rows = api.fixtures_by_ids(chunk)
+            bundles.extend(normalize_full_fixture_row(row) for row in rows)
+        return bundles
+
+    # Plano gratuito: uma chamada por fixture usando `id`.
+    for fixture_id in ids:
+        rows = api.fixture_by_id(fixture_id)
+        bundles.extend(normalize_full_fixture_row(row) for row in rows)
+
+    return bundles
+
+
+def fetch_fixture_full_bundle(
+    fixture_id: int | str,
+    *,
+    client: APIFootballClient | None = None,
+    use_ids_param: bool = False,
+) -> dict[str, Any]:
+    """Busca um fixture em modo full. Usa `/fixtures?id=` por padrão."""
+    bundles = fetch_fixture_full_bundles(
+        [fixture_id],
+        client=client,
+        chunk_size=1,
+        use_ids_param=use_ids_param,
+    )
+    if not bundles:
+        raise APIFootballError(f"Fixture não encontrado no modo full bundle: {fixture_id}")
+    return bundles[0]
 
 def fetch_fixture_bundle(
     fixture_id: int | str,

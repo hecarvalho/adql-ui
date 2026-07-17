@@ -36,10 +36,10 @@
         "Ayia Napa",
         "0 x 5",
         "FT",
-        NaN,
-        NaN,
-        NaN,
-        NaN
+        null,
+        null,
+        null,
+        null
       ]
     ]
   }
