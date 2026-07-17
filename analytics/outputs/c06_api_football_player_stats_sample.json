@@ -1,0 +1,43 @@
+{
+  "component": "C-06",
+  "schemaVersion": "adql.c06.table.v1",
+  "title": "API-Football — estatísticas de jogadores",
+  "subtitle": "Tabela gerada a partir do SQLite local do ADQL Analytics",
+  "data": {
+    "columns": [
+      "Jogador",
+      "Equipe",
+      "Recorte",
+      "Min",
+      "Gols",
+      "Assist",
+      "Chutes",
+      "Passes-chave",
+      "Ações def."
+    ],
+    "rows": [
+      [
+        "Bukayo Saka",
+        "Arsenal",
+        "match:990001",
+        90.0,
+        1.0,
+        1.0,
+        4.0,
+        3.0,
+        3.0
+      ],
+      [
+        "Mohamed Salah",
+        "Liverpool",
+        "match:990001",
+        90.0,
+        1.0,
+        0.0,
+        3.0,
+        2.0,
+        1.0
+      ]
+    ]
+  }
+}

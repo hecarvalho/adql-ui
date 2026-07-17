@@ -1,0 +1,34 @@
+{
+  "component": "C-06",
+  "schemaVersion": "adql.c06.table.v1",
+  "title": "API-Football — partidas no banco",
+  "subtitle": "Tabela gerada a partir do SQLite local do ADQL Analytics",
+  "data": {
+    "columns": [
+      "Data",
+      "Competição",
+      "Mandante",
+      "Visitante",
+      "Placar",
+      "Status",
+      "Chutes casa",
+      "Chutes fora",
+      "No alvo casa",
+      "No alvo fora"
+    ],
+    "rows": [
+      [
+        "2026-07-16",
+        "Premier League",
+        "Arsenal",
+        "Liverpool",
+        "2 x 1",
+        "FT",
+        15.0,
+        11.0,
+        6.0,
+        4.0
+      ]
+    ]
+  }
+}

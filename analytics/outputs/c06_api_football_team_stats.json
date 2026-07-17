@@ -1,0 +1,65 @@
+{
+  "component": "C-06",
+  "schemaVersion": "adql.c06.table.v1",
+  "title": "API-Football — estatísticas de equipes",
+  "subtitle": "Tabela gerada a partir do SQLite local do ADQL Analytics",
+  "data": {
+    "columns": [
+      "Equipe",
+      "Competição",
+      "Recorte",
+      "GP",
+      "GC",
+      "xG",
+      "xG contra",
+      "Chutes",
+      "Chutes contra"
+    ],
+    "rows": [
+      [
+        "Ayia Napa",
+        "2. Division",
+        "match:123456",
+        5.0,
+        0.0,
+        null,
+        null,
+        null,
+        null
+      ],
+      [
+        "Akritas",
+        "2. Division",
+        "match:123456",
+        0.0,
+        5.0,
+        null,
+        null,
+        null,
+        null
+      ],
+      [
+        "Liverpool",
+        "Premier League",
+        "match:990001",
+        1.0,
+        2.0,
+        1.12,
+        1.85,
+        11.0,
+        15.0
+      ],
+      [
+        "Arsenal",
+        "Premier League",
+        "match:990001",
+        2.0,
+        1.0,
+        1.85,
+        1.12,
+        15.0,
+        11.0
+      ]
+    ]
+  }
+}

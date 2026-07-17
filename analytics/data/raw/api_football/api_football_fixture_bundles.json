@@ -1,0 +1,82 @@
+[
+  {
+    "fixture": {
+      "fixture": {
+        "id": 123456,
+        "referee": null,
+        "timezone": "UTC",
+        "date": "2019-02-23T13:00:00+00:00",
+        "timestamp": 1550926800,
+        "periods": {
+          "first": 1550926800,
+          "second": 1550930400
+        },
+        "venue": {
+          "id": null,
+          "name": "Koinotiko Stadio Chlorakas (Khloraka (Chloraka))",
+          "city": null
+        },
+        "status": {
+          "long": "Match Finished",
+          "short": "FT",
+          "elapsed": 90,
+          "extra": null
+        }
+      },
+      "league": {
+        "id": 319,
+        "name": "2. Division",
+        "country": "Cyprus",
+        "logo": "https://media.api-sports.io/football/leagues/319.png",
+        "flag": "https://media.api-sports.io/flags/cy.svg",
+        "season": 2018,
+        "round": "Regular Season - 21",
+        "standings": true
+      },
+      "teams": {
+        "home": {
+          "id": 3406,
+          "name": "Akritas",
+          "logo": "https://media.api-sports.io/football/teams/3406.png",
+          "winner": false
+        },
+        "away": {
+          "id": 3409,
+          "name": "Ayia Napa",
+          "logo": "https://media.api-sports.io/football/teams/3409.png",
+          "winner": true
+        }
+      },
+      "goals": {
+        "home": 0,
+        "away": 5
+      },
+      "score": {
+        "halftime": {
+          "home": null,
+          "away": null
+        },
+        "fulltime": {
+          "home": 0,
+          "away": 5
+        },
+        "extratime": {
+          "home": null,
+          "away": null
+        },
+        "penalty": {
+          "home": null,
+          "away": null
+        }
+      },
+      "events": [],
+      "lineups": [],
+      "statistics": [],
+      "players": []
+    },
+    "statistics": [],
+    "events": [],
+    "lineups": [],
+    "players": []
+  }
+]

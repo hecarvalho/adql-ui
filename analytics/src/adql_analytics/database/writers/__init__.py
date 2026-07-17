@@ -1,13 +1,33 @@
 from __future__ import annotations
 
-from .fbref_writer import write_fbref_player_stats_to_database
-from .understat_writer import write_understat_player_stats_to_database
-from .football_data_writer import write_football_data_matches_to_database
-from .clubelo_writer import write_clubelo_ratings_to_database
+__all__: list[str] = []
 
-__all__ = [
-    "write_fbref_player_stats_to_database",
-    "write_understat_player_stats_to_database",
-    "write_football_data_matches_to_database",
-    "write_clubelo_ratings_to_database",
-]
+try:
+    from .fbref_writer import write_fbref_player_stats_to_database
+    __all__.append("write_fbref_player_stats_to_database")
+except ImportError:  # pragma: no cover
+    pass
+
+try:
+    from .understat_writer import write_understat_player_stats_to_database
+    __all__.append("write_understat_player_stats_to_database")
+except ImportError:  # pragma: no cover
+    pass
+
+try:
+    from .football_data_writer import write_football_data_matches_to_database
+    __all__.append("write_football_data_matches_to_database")
+except ImportError:  # pragma: no cover
+    pass
+
+try:
+    from .clubelo_writer import write_clubelo_ratings_to_database
+    __all__.append("write_clubelo_ratings_to_database")
+except ImportError:  # pragma: no cover
+    pass
+
+try:
+    from .api_football_writer import write_api_football_fixture_bundles_to_database
+    __all__.append("write_api_football_fixture_bundles_to_database")
+except ImportError:  # pragma: no cover
+    pass

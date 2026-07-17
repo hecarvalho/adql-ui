@@ -1,0 +1,24 @@
+{
+  "component": "C-06",
+  "schemaVersion": "adql.c06.table.v1",
+  "title": "API-Football — eventos básicos",
+  "subtitle": "Tabela gerada a partir do SQLite local do ADQL Analytics",
+  "data": {
+    "columns": [
+      "Título",
+      "Tipo",
+      "Início",
+      "Fim",
+      "Descrição"
+    ],
+    "rows": [
+      [
+        "Eventos básicos: Arsenal x Liverpool",
+        "api_football_event_log",
+        18,
+        78,
+        "Eventos básicos sem coordenadas, obtidos via API-Football."
+      ]
+    ]
+  }
+}
