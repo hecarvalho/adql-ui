@@ -2,7 +2,7 @@
   "component": "C-06",
   "schemaVersion": "adql.c06.table.v1",
   "title": "ClubElo no banco ADQL",
-  "subtitle": "Tabela gerada a partir do SQLite local",
+  "subtitle": "Ratings de força relativa salvos no SQLite local",
   "data": {
     "columns": [
       "Data",
@@ -13,25 +13,88 @@
     ],
     "rows": [
       [
-        "2026-01-10",
-        "Barcelona",
-        "ESP",
-        2,
-        1948.7
-      ],
-      [
-        "2026-01-10",
-        "Liverpool",
+        "2026-07-16",
+        "Man City",
         "ENG",
-        4,
-        1922.1
+        1.0,
+        2054.2
       ],
       [
-        "2026-01-10",
+        "2026-07-16",
+        "Real Madrid",
+        "ESP",
+        2.0,
+        2041.8
+      ],
+      [
+        "2026-07-16",
         "Arsenal",
         "ENG",
-        5,
-        1908.4
+        3.0,
+        1978.4
+      ],
+      [
+        "2026-07-16",
+        "Bayern",
+        "GER",
+        4.0,
+        1966.9
+      ],
+      [
+        "2026-07-16",
+        "Liverpool",
+        "ENG",
+        5.0,
+        1958.6
+      ],
+      [
+        "2026-07-16",
+        "Barcelona",
+        "ESP",
+        6.0,
+        1947.1
+      ],
+      [
+        "2026-07-16",
+        "Inter",
+        "ITA",
+        7.0,
+        1928.5
+      ],
+      [
+        "2026-07-16",
+        "PSG",
+        "FRA",
+        8.0,
+        1915.7
+      ],
+      [
+        "2026-07-16",
+        "Atletico",
+        "ESP",
+        9.0,
+        1872.3
+      ],
+      [
+        "2026-07-16",
+        "Dortmund",
+        "GER",
+        10.0,
+        1859.6
+      ],
+      [
+        "2026-07-16",
+        "Kairat",
+        "KAZ",
+        null,
+        1294.4
+      ],
+      [
+        "2026-07-16",
+        "Liepajas",
+        "LAT",
+        null,
+        1216.2
       ]
     ]
   }

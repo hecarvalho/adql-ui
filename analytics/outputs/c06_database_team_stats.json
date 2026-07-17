@@ -1,0 +1,75 @@
+{
+  "component": "C-06",
+  "schemaVersion": "adql.c06.table.v1",
+  "title": "Estatísticas de equipes no banco ADQL",
+  "subtitle": "Dados agregados de equipes salvos no SQLite local",
+  "data": {
+    "columns": [
+      "Equipe",
+      "Fonte",
+      "Competição",
+      "Temporada",
+      "Escopo",
+      "Jogos",
+      "Gols pró",
+      "Gols contra",
+      "xG pró",
+      "xG contra",
+      "Chutes pró"
+    ],
+    "rows": [
+      [
+        "Akritas",
+        "API-Football",
+        "2. Division",
+        "2018",
+        "match:123456",
+        1.0,
+        0.0,
+        5.0,
+        null,
+        null,
+        null
+      ],
+      [
+        "Ayia Napa",
+        "API-Football",
+        "2. Division",
+        "2018",
+        "match:123456",
+        1.0,
+        5.0,
+        0.0,
+        null,
+        null,
+        null
+      ],
+      [
+        "Arsenal",
+        "API-Football",
+        "Premier League",
+        "2025",
+        "match:990001",
+        1.0,
+        2.0,
+        1.0,
+        1.85,
+        1.12,
+        15.0
+      ],
+      [
+        "Liverpool",
+        "API-Football",
+        "Premier League",
+        "2025",
+        "match:990001",
+        1.0,
+        1.0,
+        2.0,
+        1.12,
+        1.85,
+        11.0
+      ]
+    ]
+  }
+}

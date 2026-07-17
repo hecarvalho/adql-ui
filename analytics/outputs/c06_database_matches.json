@@ -1,0 +1,166 @@
+{
+  "component": "C-06",
+  "schemaVersion": "adql.c06.table.v1",
+  "title": "Partidas no banco ADQL",
+  "subtitle": "Resultados e estatísticas básicas consolidadas no SQLite local",
+  "data": {
+    "columns": [
+      "Data",
+      "Mandante",
+      "GM",
+      "GV",
+      "Visitante",
+      "Finalizações M",
+      "Finalizações V",
+      "No alvo M",
+      "No alvo V",
+      "Fonte"
+    ],
+    "rows": [
+      [
+        "2026-07-16T19:00:00+00:00",
+        "Arsenal",
+        2,
+        1,
+        "Liverpool",
+        15.0,
+        11.0,
+        6.0,
+        4.0,
+        "API-Football"
+      ],
+      [
+        "2026-05-24",
+        "West Ham",
+        3,
+        0,
+        "Leeds",
+        16.0,
+        13.0,
+        9.0,
+        3.0,
+        "Football-Data.co.uk"
+      ],
+      [
+        "2026-05-24",
+        "Fulham",
+        2,
+        0,
+        "Newcastle",
+        21.0,
+        7.0,
+        6.0,
+        2.0,
+        "Football-Data.co.uk"
+      ],
+      [
+        "2026-05-24",
+        "Brighton",
+        0,
+        3,
+        "Man United",
+        13.0,
+        11.0,
+        2.0,
+        7.0,
+        "Football-Data.co.uk"
+      ],
+      [
+        "2026-05-24",
+        "Burnley",
+        1,
+        1,
+        "Wolves",
+        16.0,
+        16.0,
+        8.0,
+        4.0,
+        "Football-Data.co.uk"
+      ],
+      [
+        "2026-05-24",
+        "Crystal Palace",
+        1,
+        2,
+        "Arsenal",
+        8.0,
+        17.0,
+        3.0,
+        7.0,
+        "Football-Data.co.uk"
+      ],
+      [
+        "2026-05-24",
+        "Tottenham",
+        1,
+        0,
+        "Everton",
+        21.0,
+        8.0,
+        6.0,
+        3.0,
+        "Football-Data.co.uk"
+      ],
+      [
+        "2026-05-24",
+        "Liverpool",
+        1,
+        1,
+        "Brentford",
+        24.0,
+        11.0,
+        8.0,
+        2.0,
+        "Football-Data.co.uk"
+      ],
+      [
+        "2026-05-24",
+        "Sunderland",
+        2,
+        1,
+        "Chelsea",
+        20.0,
+        10.0,
+        2.0,
+        1.0,
+        "Football-Data.co.uk"
+      ],
+      [
+        "2026-05-24",
+        "Man City",
+        1,
+        2,
+        "Aston Villa",
+        16.0,
+        12.0,
+        3.0,
+        5.0,
+        "Football-Data.co.uk"
+      ],
+      [
+        "2026-05-24",
+        "Nott'm Forest",
+        1,
+        1,
+        "Bournemouth",
+        15.0,
+        17.0,
+        5.0,
+        4.0,
+        "Football-Data.co.uk"
+      ],
+      [
+        "2026-05-19",
+        "Chelsea",
+        2,
+        1,
+        "Tottenham",
+        9.0,
+        9.0,
+        4.0,
+        3.0,
+        "Football-Data.co.uk"
+      ]
+    ]
+  }
+}

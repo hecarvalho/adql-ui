@@ -11,80 +11,76 @@ from adql_analytics.adql_export.to_c06_table import dataframe_to_c06_table
 from adql_analytics.config import load_config
 from adql_analytics.database import AnalyticsRepository, initialize_database
 from adql_analytics.io import write_json
+from adql_analytics.transforms.database_exports import (
+    database_clubelo_table,
+    database_match_results_table,
+    database_players_to_table,
+    database_team_stats_table,
+    load_database_player_metric_table,
+)
 
 
-def build_players_table(repo: AnalyticsRepository):
-    df = repo.query_dataframe(
-        """
-        SELECT
-          p.name AS Jogador,
-          t.name AS Equipe,
-          s.name AS Fonte,
-          ROUND(ps.minutes, 0) AS Min,
-          ROUND((COALESCE(ps.goals, 0) * 90.0) / NULLIF(ps.minutes, 0), 2) AS "Gols/90",
-          ROUND((COALESCE(ps.assists, 0) * 90.0) / NULLIF(ps.minutes, 0), 2) AS "Assist/90",
-          ROUND((COALESCE(ps.xg, 0) * 90.0) / NULLIF(ps.minutes, 0), 2) AS "xG/90",
-          ROUND((COALESCE(ps.xa, 0) * 90.0) / NULLIF(ps.minutes, 0), 2) AS "xA/90",
-          ROUND((COALESCE(ps.shots, 0) * 90.0) / NULLIF(ps.minutes, 0), 2) AS "Chutes/90"
-        FROM player_stats ps
-        JOIN players p ON p.player_id = ps.player_id
-        LEFT JOIN teams t ON t.team_id = ps.team_id
-        LEFT JOIN sources s ON s.source_id = ps.source_id
-        ORDER BY ps.source_id, "xG/90" DESC
-        LIMIT 12
-        """
+def parse_args() -> argparse.Namespace:
+    parser = argparse.ArgumentParser(description="Exporta tabelas C-06 a partir do banco SQLite ADQL Analytics.")
+    parser.add_argument(
+        "--mode",
+        choices=["players", "team-stats", "matches", "clubelo"],
+        default="players",
+        help="Tipo de tabela a exportar.",
     )
-    return df
-
-
-def build_clubelo_table(repo: AnalyticsRepository):
-    df = repo.query_dataframe(
-        """
-        SELECT
-          cr.rating_date AS Data,
-          t.name AS Equipe,
-          cr.country AS País,
-          cr.rank AS Ranking,
-          ROUND(cr.elo, 1) AS Elo
-        FROM clubelo_ratings cr
-        JOIN teams t ON t.team_id = cr.team_id
-        ORDER BY cr.rating_date DESC, cr.elo DESC
-        LIMIT 12
-        """
-    )
-    return df
+    parser.add_argument("--source", default=None, help="Filtra fonte no modo players. Ex.: fbref, understat.")
+    parser.add_argument("--season", default=None, help="Filtra temporada no modo players.")
+    parser.add_argument("--competition", default=None, help="Filtra competição no modo players.")
+    parser.add_argument("--min-minutes", type=float, default=450, help="Mínimo de minutos no modo players.")
+    parser.add_argument("--sort-metric", default="xg_per90", help="Coluna interna para ordenar no modo players.")
+    parser.add_argument("--limit", type=int, default=12, help="Número máximo de linhas.")
+    parser.add_argument("--output", default=None, help="Nome do arquivo de saída em analytics/outputs.")
+    return parser.parse_args()
 
 
 def main() -> None:
-    parser = argparse.ArgumentParser(description="Exporta tabelas C-06 a partir do SQLite ADQL Analytics.")
-    parser.add_argument("--mode", choices=["players", "clubelo"], default="players")
-    args = parser.parse_args()
-
+    args = parse_args()
     config = load_config()
     db_path = initialize_database()
 
     with AnalyticsRepository(db_path) as repo:
         if args.mode == "clubelo":
-            df = build_clubelo_table(repo)
-            output_path = config.output_dir / "c06_database_clubelo.json"
+            df = database_clubelo_table(repo, limit=args.limit)
             title = "ClubElo no banco ADQL"
-            subtitle = "Tabela gerada a partir do SQLite local"
+            subtitle = "Ratings de força relativa salvos no SQLite local"
+            output_name = args.output or "c06_database_clubelo.json"
+        elif args.mode == "matches":
+            df = database_match_results_table(repo, limit=args.limit)
+            title = "Partidas no banco ADQL"
+            subtitle = "Resultados e estatísticas básicas consolidadas no SQLite local"
+            output_name = args.output or "c06_database_matches.json"
+        elif args.mode == "team-stats":
+            df = database_team_stats_table(repo, limit=args.limit)
+            title = "Estatísticas de equipes no banco ADQL"
+            subtitle = "Dados agregados de equipes salvos no SQLite local"
+            output_name = args.output or "c06_database_team_stats.json"
         else:
-            df = build_players_table(repo)
-            output_path = config.output_dir / "c06_database_players.json"
+            metric_table = load_database_player_metric_table(
+                repo,
+                source=args.source,
+                season=args.season,
+                competition=args.competition,
+                min_minutes=args.min_minutes,
+            )
+            df = database_players_to_table(metric_table, limit=args.limit, sort_metric=args.sort_metric)
             title = "Jogadores no banco ADQL"
             subtitle = "Métricas por 90 geradas a partir do SQLite local"
+            output_name = args.output or "c06_database_players.json"
 
         if df.empty:
-            raise SystemExit(
-                "Nenhum dado encontrado. Rode antes: python examples\\update_database_from_sample.py"
-            )
+            raise SystemExit("Nenhum dado encontrado para os filtros informados.")
 
+        output_path = config.output_dir / output_name
         payload = dataframe_to_c06_table(
             df,
             title=title,
             subtitle=subtitle,
-            max_rows=12,
+            max_rows=args.limit,
         )
         write_json(payload, output_path)
         repo.insert_generated_export(
@@ -92,10 +88,11 @@ def main() -> None:
             source_id="database",
             title=title,
             output_path=str(output_path),
-            source_payload={"mode": args.mode},
+            source_payload=vars(args),
         )
 
-    print(f"Arquivo gerado: {output_path}")
+    print(f"JSON C-06 gerado: {output_path}")
+    print("Importe o arquivo no ADQL UI pelo card Analytics do C-06.")
 
 
 if __name__ == "__main__":

@@ -1,0 +1,89 @@
+{
+  "component": "C-05",
+  "schemaVersion": "adql.c05.player-comparison.v1",
+  "title": "Bukayo Saka × Mohamed Salah",
+  "subtitle": "Comparação gerada a partir do banco SQLite ADQL Analytics",
+  "data": {
+    "scaleMax": 100,
+    "metrics": [
+      "Gols/90",
+      "Assistências/90",
+      "xG/90",
+      "xA/90",
+      "Chutes/90",
+      "Progressão/90",
+      "Defesa/90"
+    ],
+    "players": [
+      {
+        "name": "Bukayo Saka",
+        "team": "Arsenal",
+        "values": {
+          "Gols/90": 85.08557457212714,
+          "Assistências/90": 89.24205378973105,
+          "xG/90": 26.71149144254279,
+          "xA/90": 26.10024449877751,
+          "Chutes/90": 94.49877750611248,
+          "Progressão/90": 25.0,
+          "Defesa/90": 69.07090464547677
+        }
+      },
+      {
+        "name": "Mohamed Salah",
+        "team": "Liverpool",
+        "values": {
+          "Gols/90": 85.81907090464547,
+          "Assistências/90": 95.2322738386308,
+          "xG/90": 26.71149144254279,
+          "xA/90": 26.10024449877751,
+          "Chutes/90": 94.00977995110024,
+          "Progressão/90": 25.0,
+          "Defesa/90": 59.7799511002445
+        }
+      }
+    ],
+    "rawMetrics": [
+      {
+        "name": "Bukayo Saka",
+        "team": "Arsenal",
+        "source": "FBref",
+        "competition": "ENG-Premier League",
+        "season": "2526",
+        "minutes": 2222.0,
+        "rawValues": {
+          "Gols/90": 0.28,
+          "Assistências/90": 0.2,
+          "xG/90": 0.0,
+          "xA/90": 0.0,
+          "Chutes/90": 2.876,
+          "Progressão/90": 0.0,
+          "Defesa/90": 0.77
+        }
+      },
+      {
+        "name": "Mohamed Salah",
+        "team": "Liverpool",
+        "source": "FBref",
+        "competition": "ENG-Premier League",
+        "season": "2526",
+        "minutes": 2146.0,
+        "rawValues": {
+          "Gols/90": 0.289,
+          "Assistências/90": 0.289,
+          "xG/90": 0.0,
+          "xA/90": 0.0,
+          "Chutes/90": 2.852,
+          "Progressão/90": 0.0,
+          "Defesa/90": 0.503
+        }
+      }
+    ],
+    "normalization": {
+      "type": "percentile",
+      "scale": "0-100",
+      "basis": "player_stats SQLite"
+    }
+  },
+  "description": "Comparação gerada a partir do banco SQLite ADQL Analytics.",
+  "source": "ADQL Analytics Database"
+}
